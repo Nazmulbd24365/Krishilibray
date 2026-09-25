@@ -54,7 +54,7 @@ const HERO_SLIDES = [
   {
     id: 2,
     imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600",
-    badgeBn: "ঐতিহ্য ও সংস্কৃতি",
+    badgeBn: "ঐতিহ্যি",
     badgeEn: "Heritage & Culture",
     titleBn: "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর",
     titleEn: "Shah Krishi Information Library & Museum",
