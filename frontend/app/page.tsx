@@ -66,7 +66,7 @@ const HERO_SLIDES = [
   
   {
     id: 2,
-    imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600",
+    imageUrl: "https://supabase.com/dashboard/project/zlqhpgchrxfapxyqyrli/storage/files/buckets/Slider%20Images?preview=1628937163.jpg",
     badgeBn: "ঐতিহ্যি",
     badgeEn: "Heritage & Culture",
     titleBn: "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর",
@@ -74,6 +74,19 @@ const HERO_SLIDES = [
     subtitleBn: "কৃষি ঐতিহ্যের সুরক্ষা এবং সমৃদ্ধ জ্ঞানভাণ্ডারের বিশ্বস্ত ঠিকানা।",
     subtitleEn: "Preserving agricultural heritage and trusted destination of enriched knowledge.",
   },
+
+{
+    id: 4,
+    imageUrl: "https://supabase.com/dashboard/project/zlqhpgchrxfapxyqyrli/storage/files/buckets/Slider%20Images?preview=1633855419.jpg",
+    badgeBn: "ঐতিহ্যি",
+    badgeEn: "Heritage & Culture",
+    titleBn: "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর",
+    titleEn: "Shah Krishi Information Library & Museum",
+    subtitleBn: "কৃষি ঐতিহ্যের সুরক্ষা এবং সমৃদ্ধ জ্ঞানভাণ্ডারের বিশ্বস্ত ঠিকানা।",
+    subtitleEn: "Preserving agricultural heritage and trusted destination of enriched knowledge.",
+  },
+
+  
 ];
 
 const ABOUT_IMAGES = [
