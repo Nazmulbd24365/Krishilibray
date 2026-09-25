@@ -51,6 +51,19 @@ const HERO_SLIDES = [
     subtitleBn: "সংগ্রহে থাকা শত শত কৃষি বিষয়ক গবেষণা ও দুর্লভ বই থেকে তথ্য খুঁজুন।",
     subtitleEn: "Search information from hundreds of agricultural research and rare books.",
   },
+
+{
+    id: 3,
+    imageUrl: "https://supabase.com/dashboard/project/zlqhpgchrxfapxyqyrli/storage/files/buckets/Slider%20Images?preview=1628937022.jpg",
+    badgeBn: "স্বাগতম জ্ঞানভাণ্ডারে",
+    badgeEn: "Welcome to Knowledge Hub",
+    titleBn: "কৃষি লাইব্রেরিতে আপনাকে স্বাগতম",
+    titleEn: "Welcome to Krishi Library",
+    subtitleBn: "সংগ্রহে থাকা শত শত কৃষি বিষয়ক গবেষণা ও দুর্লভ বই থেকে তথ্য খুঁজুন।",
+    subtitleEn: "Search information from hundreds of agricultural research and rare books.",
+  },
+
+  
   {
     id: 2,
     imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600",
