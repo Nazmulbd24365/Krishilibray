@@ -43,7 +43,7 @@ const NOTICES = [
 const HERO_SLIDES = [
   {
     id: 1,
-    imageUrl: "https://zlqhpgchrxfapxyqyrli.supabase.co/storage/v1/object/sign/Slider%20Images/1628936969.jpg?token=eyJraWQiOiJjZDUzODVkMC00YzI5LTRjZTctYjA5OS00YmNiZmZhM2NmMWIiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJTbGlkZXIgSW1hZ2VzLzE2Mjg5MzY5NjkuanBnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc5MDMxODMxNiwiZXhwIjoxODIxODU0MzE2fQ.csD2ACYjCUfUXZaY0Zp7z7zEAnWUt4fY78ae60fV_K4p9SmDLkSk6NO4LCYdbri0KPVjaDE2gDs_tFP_1KNuwQ",
+    imageUrl: "https://supabase.com/dashboard/project/zlqhpgchrxfapxyqyrli/storage/files/buckets/Slider%20Images?preview=1628936969.jpg",
     badgeBn: "স্বাগতম জ্ঞানভাণ্ডারে",
     badgeEn: "Welcome to Knowledge Hub",
     titleBn: "কৃষি লাইব্রেরিতে আপনাকে স্বাগতম",
