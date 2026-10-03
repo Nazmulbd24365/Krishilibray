@@ -1,399 +1,222 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Search, BookOpen, Landmark, Sprout, ArrowRight, Sun, Moon, 
-  ChevronLeft, ChevronRight, ChevronDown, Globe, X, UserCheck,
-  CloudSun, LayoutDashboard, Plus, Trash2, Edit, Save, FileText, CheckCircle
+  Globe, Sun, Moon, Lock, LogOut, LayoutDashboard, 
+  Plus, Trash2, Edit, Save, FileText, CheckCircle2, CloudSun,
+  BookOpen, Landmark, Sparkles
 } from 'lucide-react';
 
 export default function Home() {
   const [view, setView] = useState<'public' | 'admin'>('public');
-  const [darkMode, setDarkMode] = useState(false);
-  const [lang, setLang] = useState<'bn' | 'en'>('bn');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loginError, setLoginError] = useState(false);
 
-  // Weather States
-  const [weatherList, setWeatherList] = useState<{ city: string; temp: number }[]>([]);
-  const [currentWeatherIndex, setCurrentWeatherIndex] = useState(0);
-  const [weatherLoading, setWeatherLoading] = useState(true);
+  // States
+  const [lang, setLang] = useState<'bn' | 'en'>('en');
+  const [darkMode, setDarkMode] = useState(true);
 
-  // Header Scroll & Search
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Dynamic Ticker Data
+  const [tickerText, setTickerText] = useState(
+    'The e-book catalog of rare agricultural books has been updated.'
+  );
 
-  // Dynamic Data States (LocalStorage / CMS persistence)
-  const [newsList, setNewsList] = useState([
-    { id: 1, textBn: 'শাহ্ কৃষি লাইব্রেরিতে যুক্ত হলো নতুন ৫০০টি বিরল ডিজিটাল ই-বুক।', textEn: '500 rare digital e-books added to Shah Agriculture Library.' },
-    { id: 2, textBn: 'আগামী সপ্তাহে অনুষ্ঠিত হতে যাচ্ছে জাতীয় কৃষি জাদুঘর প্রদর্শনী ২০২৬।', textEn: 'National Agri Museum Exhibition 2026 to be held next week.' },
-    { id: 3, textBn: 'নতুন ডিজিটাল আর্কাইভ সংস্করণে যুক্ত হলো ঐতিহ্যবাহী কৃষি যন্ত্রপাতির ক্যাটালগ।', textEn: 'Catalog of traditional farming tools added in new archive version.' },
-    { id: 4, textBn: 'জৈব কৃষি ও আধুনিক বীজ সংরক্ষণ বিষয়ক ই-লার্নিং মডিউল উন্মুক্ত।', textEn: 'E-learning module on organic farming & seed preservation launched.' },
-  ]);
-
-  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
-
-  // Stats Counters
+  // Stats Data
   const [stats, setStats] = useState({
-    ebooks: 1500,
-    artifacts: 1000,
-    categories: 50
+    books: 1250,
+    artifacts: 850,
+    publications: 320
   });
 
-  // Slide Images
-  const [slides, setSlides] = useState([
-    {
-      id: 1,
-      titleBn: 'কৃষি জ্ঞান ও আবহমান বাংলার ইতিহাসের ডিজিটাল সংরক্ষণাগার',
-      titleEn: 'Digital Archive of Agricultural Knowledge & Heritage',
-      imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600&auto=format&fit=crop',
-    },
-    {
-      id: 2,
-      titleBn: 'ঐতিহ্যবাহী বিলুপ্তপ্রায় কৃষি যন্ত্রপাতি ও গ্রামীণ নিদর্শন',
-      titleEn: 'Traditional Endangered Agricultural Artifacts & Heritage',
-      imageUrl: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600&auto=format&fit=crop',
-    },
-    {
-      id: 3,
-      titleBn: 'জ্ঞানার্জনের অনন্য মাধ্যম ও সমৃদ্ধ ডিজিটাল লাইব্রেরি ক্যাটালগ',
-      titleEn: 'Unique Educational Platform & E-Book Library Catalog',
-      imageUrl: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?q=80&w=1600&auto=format&fit=crop',
-    },
-  ]);
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Admin New Ticker Form State
-  const [newNoticeBn, setNewNoticeBn] = useState('');
-  const [newNoticeEn, setNewNoticeEn] = useState('');
-
-  // Fetch Weather
-  useEffect(() => {
-    async function fetchAllWeather() {
-      try {
-        setWeatherLoading(true);
-        let userCity = lang === 'bn' ? 'ঢাকা (আপনার স্থান)' : 'Dhaka (Your Location)';
-        let userLat = 23.8103;
-        let userLon = 90.4125;
-
-        try {
-          const ipRes = await fetch('https://ipapi.co/json/');
-          if (ipRes.ok) {
-            const ipData = await ipRes.json();
-            if (ipData.latitude && ipData.longitude) {
-              userLat = ipData.latitude;
-              userLon = ipData.longitude;
-              userCity = ipData.city || userCity;
-            }
-          }
-        } catch (e) {
-          console.log('IP Location fetch fallback.');
-        }
-
-        const divisions = [
-          { nameBn: userCity, nameEn: userCity, lat: userLat, lon: userLon },
-          { nameBn: 'ঢাকা', nameEn: 'Dhaka', lat: 23.8103, lon: 90.4125 },
-          { nameBn: 'চট্টগ্রাম', nameEn: 'Chittagong', lat: 22.3569, lon: 91.7832 },
-          { nameBn: 'রাজশাহী', nameEn: 'Rajshahi', lat: 24.3636, lon: 88.6241 },
-          { nameBn: 'খুলনা', nameEn: 'Khulna', lat: 22.8456, lon: 89.5403 },
-        ];
-
-        const fetchedData: { city: string; temp: number }[] = [];
-        for (const div of divisions) {
-          try {
-            const res = await fetch(
-              `https://api.open-meteo.com/v1/forecast?latitude=${div.lat}&longitude=${div.lon}&current_weather=true`
-            );
-            if (res.ok) {
-              const data = await res.json();
-              if (data.current_weather) {
-                fetchedData.push({
-                  city: lang === 'bn' ? div.nameBn : div.nameEn,
-                  temp: Math.round(data.current_weather.temperature),
-                });
-              }
-            }
-          } catch (err) {}
-        }
-
-        if (fetchedData.length > 0) {
-          setWeatherList(fetchedData);
-        } else {
-          setWeatherList([{ city: lang === 'bn' ? 'ঢাকা' : 'Dhaka', temp: 28 }]);
-        }
-      } catch (err) {
-        setWeatherList([{ city: lang === 'bn' ? 'ঢাকা' : 'Dhaka', temp: 28 }]);
-      } finally {
-        setWeatherLoading(false);
-      }
-    }
-
-    fetchAllWeather();
-  }, [lang]);
-
-  // Weather Rotation
-  useEffect(() => {
-    if (weatherList.length > 0) {
-      const timer = setInterval(() => {
-        setCurrentWeatherIndex((prev) => (prev + 1) % weatherList.length);
-      }, 4000);
-      return () => clearInterval(timer);
-    }
-  }, [weatherList]);
-
-  // News Ticker Timer
-  useEffect(() => {
-    if (newsList.length > 0) {
-      const newsTimer = setInterval(() => {
-        setCurrentNewsIndex((prev) => (prev + 1) % newsList.length);
-      }, 5000);
-      return () => clearInterval(newsTimer);
-    }
-  }, [newsList.length]);
-
-  // Add Notice in Admin
-  const handleAddNotice = (e: React.FormEvent) => {
+  // Admin Login Handler
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNoticeBn) return;
-    const item = {
-      id: Date.now(),
-      textBn: newNoticeBn,
-      textEn: newNoticeEn || newNoticeBn,
-    };
-    setNewsList([...newsList, item]);
-    setNewNoticeBn('');
-    setNewNoticeEn('');
-  };
-
-  // Delete Notice
-  const handleDeleteNotice = (id: number) => {
-    setNewsList(newsList.filter(item => item.id !== id));
+    if (adminPassword === 'admin123') { // পাসওয়ার্ড হিসেবে admin123 সেট করা হয়েছে
+      setIsLoggedIn(true);
+      setLoginError(false);
+    } else {
+      setLoginError(true);
+    }
   };
 
   return (
-    <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-gray-800'} min-h-screen font-sans transition-colors duration-300`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* Top Floating Control Bar */}
-      <div className="fixed top-0 left-0 w-full z-50 transition-all duration-300 shadow-md">
-        
-        {/* White Solid Topbar */}
-        <div className="bg-white text-gray-900 text-xs font-extrabold py-2 px-4 sm:px-8 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            
-            <div className="flex items-center space-x-2 text-[#006A4E]">
-              <CloudSun className="h-4 w-4 text-[#006A4E]" />
-              {weatherLoading ? (
-                <span>আবহাওয়া লোড হচ্ছে...</span>
-              ) : (
-                <span className="font-bold">
-                  {weatherList[currentWeatherIndex]?.city}: {weatherList[currentWeatherIndex]?.temp}°C
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-800 font-bold hidden sm:inline">
-                {lang === 'bn' ? 'সোমবার, ২১ সেপ্টেম্বর, ২০২৬' : 'Monday, September 21, 2026'}
-              </span>
-
-              {/* View Toggle (Frontend vs Admin Backend) */}
-              <button
-                onClick={() => setView(view === 'public' ? 'admin' : 'public')}
-                className="flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#006A4E] text-white hover:bg-emerald-800 transition"
-              >
-                <LayoutDashboard className="h-3.5 w-3.5" />
-                <span>{view === 'public' ? (lang === 'bn' ? 'এডমিন ব্যাকএন্ড' : 'Admin Backend') : (lang === 'bn' ? 'মূল ওয়েবসাইট' : 'Public Site')}</span>
-              </button>
-            </div>
-
+      {/* Top Utility Bar */}
+      <div className="w-full bg-black/40 backdrop-blur-md border-b border-white/10 text-xs py-1.5 px-4 sm:px-8 text-white fixed top-0 z-50 flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1.5 text-emerald-400">
+            <CloudSun className="h-3.5 w-3.5" />
+            <span>Chittagong: 29°C (Partly Cloudy)</span>
           </div>
+          <span className="hidden md:inline text-gray-300">|</span>
+          <span className="hidden md:inline text-yellow-300 font-medium">
+            📢 {tickerText}
+          </span>
         </div>
 
-        {/* Navigation Header */}
-        <header className="bg-[#006A4E] text-white border-b-2 border-[#F42A41]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-            
-            <a href="https://krishilibrary.com" target="_blank" rel="noreferrer" className="flex items-center space-x-2.5">
-              <div className="p-1.5 rounded-lg bg-[#F42A41] text-white shadow-md">
-                <Sprout className="h-5 w-5" />
-              </div>
-              <span className="text-base font-extrabold tracking-wide text-white">
-                {lang === 'bn' ? 'শাহ্ কৃষি লাইব্রেরি' : 'Shah Krishilibrary'}
-              </span>
-            </a>
+        <div className="flex items-center space-x-3">
+          <span className="hidden lg:inline text-gray-400">Saturday, October 3, 2026</span>
+          
+          {/* Admin Switcher */}
+          <button
+            onClick={() => setView(view === 'public' ? 'admin' : 'public')}
+            className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 hover:bg-amber-600 text-black transition"
+          >
+            <LayoutDashboard className="h-3 w-3" />
+            <span>{view === 'public' ? 'Admin' : 'Public Site'}</span>
+          </button>
 
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={() => setLang(lang === 'bn' ? 'en' : 'bn')}
-                className="flex items-center space-x-1 text-xs font-bold bg-[#F42A41] hover:bg-red-700 text-white px-3 py-1 rounded-full transition"
-              >
-                <Globe className="h-3 w-3" />
-                <span>{lang === 'bn' ? 'EN' : 'বাংলা'}</span>
-              </button>
-
-              <button 
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-white transition"
-              >
-                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
-            </div>
-
-          </div>
-        </header>
-
+          <button
+            onClick={() => setLang(lang === 'bn' ? 'en' : 'bn')}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-2 py-0.5 rounded text-[11px] transition"
+          >
+            {lang === 'bn' ? 'English' : 'বাংলা'}
+          </button>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      {/* Main Container */}
+      <div className="pt-8">
 
         {/* PUBLIC FRONTEND VIEW */}
         {view === 'public' && (
-          <div>
-            {/* Box-Free Ticker */}
-            <div className="my-3 h-6 overflow-hidden relative text-xs font-semibold">
-              {newsList.map((news, index) => (
-                <div
-                  key={news.id}
-                  className={`absolute left-0 w-full transition-all duration-500 ${
-                    index === currentNewsIndex ? 'top-0 opacity-100' : 'top-full opacity-0'
-                  }`}
-                >
-                  <span className="text-[#006A4E] dark:text-emerald-400 font-bold mr-2">📌 নোটিশ:</span>
-                  <span>{lang === 'bn' ? news.textBn : news.textEn}</span>
-                </div>
-              ))}
-            </div>
+          <div className="relative min-h-screen flex flex-col justify-center items-center text-center px-4 pt-16 pb-12 bg-gradient-to-b from-black/80 via-black/60 to-black/90">
+            {/* Background Accent */}
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600')] bg-cover bg-center -z-10 opacity-40"></div>
 
-            {/* Slider */}
-            <div className="relative h-[300px] sm:h-[380px] rounded-2xl overflow-hidden bg-gray-900 shadow-xl mb-8">
-              <div 
-                className="h-full w-full bg-cover bg-center flex items-center px-8 transition-all duration-700"
-                style={{ backgroundImage: `url(${slides[currentSlide].imageUrl})` }}
-              >
-                <div className="absolute inset-0 bg-black/50"></div>
-                <div className="relative z-10 max-w-xl text-white">
-                  <h2 className="text-2xl font-black text-[#FFD700] mb-2 border-l-4 border-[#F42A41] pl-3">
-                    {lang === 'bn' ? 'শাহ্ কৃষি পাঠাগার ও জাদুঘর' : 'Shah Agri Library & Museum'}
-                  </h2>
-                  <p className="text-lg font-bold">
-                    {lang === 'bn' ? slides[currentSlide].titleBn : slides[currentSlide].titleEn}
-                  </p>
-                </div>
+            <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-full mb-4 inline-block tracking-widest uppercase">
+              Heritage & Culture
+            </span>
+
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-amber-400 max-w-4xl leading-tight mb-4 drop-shadow-md">
+              Shah Krishi Information Library & Museum
+            </h1>
+
+            <p className="text-sm sm:text-base text-gray-200 max-w-2xl mb-8 font-light">
+              Preserving agricultural heritage and trusted destination of enriched knowledge.
+            </p>
+
+            {/* Quick Live Stats */}
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-3xl w-full bg-black/50 border border-white/10 backdrop-blur-md p-4 rounded-2xl">
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-amber-400">{stats.books}+</div>
+                <div className="text-xs text-gray-400">Library Books</div>
               </div>
-            </div>
-
-            {/* Feature Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <BookOpen className="h-8 w-8 text-[#006A4E] mb-3" />
-                <h3 className="text-xl font-bold mb-2">{lang === 'bn' ? 'ডিজিটাল ই-লাইব্রেরি' : 'Digital E-Library'}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  {lang === 'bn' ? 'কৃষি বিষয়ক ই-বুক, সাময়িকী এবং গবেষণাপত্র ডিজিটাল আকারে পড়ুন।' : 'Read digital agricultural books and journals online.'}
-                </p>
-                <div className="text-xs font-bold text-[#006A4E]">মোট বই: {stats.ebooks}+</div>
+              <div className="border-x border-white/10">
+                <div className="text-xl sm:text-2xl font-black text-emerald-400">{stats.artifacts}+</div>
+                <div className="text-xs text-gray-400">Museum Items</div>
               </div>
-
-              <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <Landmark className="h-8 w-8 text-[#F42A41] mb-3" />
-                <h3 className="text-xl font-bold mb-2">{lang === 'bn' ? 'কৃষি জাদুঘর' : 'Agricultural Museum'}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  {lang === 'bn' ? 'বাংলার হাজার বছরের প্রাচীন বিলুপ্তপ্রায় কৃষি যন্ত্রপাতির সংগ্রহ।' : 'Explore ancient endangered farming tools and heritage.'}
-                </p>
-                <div className="text-xs font-bold text-[#F42A41]">মোট নিদর্শন: {stats.artifacts}+</div>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-yellow-400">{stats.publications}+</div>
+                <div className="text-xs text-gray-400">Publications</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ADMIN BACKEND PANEL VIEW */}
+        {/* ADMIN BACKEND CONTROL VIEW */}
         {view === 'admin' && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex justify-between items-center border-b pb-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-[#006A4E] dark:text-emerald-400">
-                  {lang === 'bn' ? 'ওয়েবসাইট ব্যাকএন্ড কন্ট্রোল প্যানেল' : 'Website Admin Control Panel'}
-                </h2>
-                <p className="text-xs text-gray-500">এখানে পরিবর্তন করলে তা সরাসরি ফ্রন্ট পেজে আপডেট হবে।</p>
+          <div className="max-w-4xl mx-auto my-12 px-4">
+            {!isLoggedIn ? (
+              /* Admin Login Form */
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md mx-auto shadow-2xl text-center">
+                <div className="p-3 bg-amber-500/10 text-amber-400 rounded-full w-fit mx-auto mb-4">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold mb-1">Admin Dashboard Login</h2>
+                <p className="text-xs text-gray-400 mb-6">এডমিন প্যানেলে প্রবেশ করতে পাসওয়ার্ড দিন</p>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <input
+                    type="password"
+                    placeholder="পাসওয়ার্ড লিখুন (Default: admin123)"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-amber-500"
+                  />
+                  {loginError && <p className="text-xs text-red-400">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</p>}
+                  
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-bold text-sm rounded-xl transition"
+                  >
+                    Login to Control Panel
+                  </button>
+                </form>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">● Live Sync</span>
-            </div>
+            ) : (
+              /* Admin CMS Panel */
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+                <div className="flex justify-between items-center border-b border-gray-800 pb-4 mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-amber-400">Website CMS & Control Panel</h2>
+                    <p className="text-xs text-gray-400">লাইভ ওয়েবসাইটের বিষয়বস্তু পরিবর্তন করুন</p>
+                  </div>
+                  <button
+                    onClick={() => setIsLoggedIn(false)}
+                    className="flex items-center space-x-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
 
-            {/* Manage News Ticker */}
-            <div className="mb-8">
-              <h3 className="text-base font-bold mb-3 flex items-center">
-                <FileText className="h-4 w-4 mr-2 text-[#F42A41]" />
-                {lang === 'bn' ? 'নোটিশ ও নিউজ স্ক্রলার এডিট করুন' : 'Manage News Ticker'}
-              </h3>
-
-              <form onSubmit={handleAddNotice} className="flex flex-col sm:flex-row gap-2 mb-4">
-                <input
-                  type="text"
-                  placeholder="নতুন নোটিশ লিখুন (বাংলা)"
-                  value={newNoticeBn}
-                  onChange={(e) => setNewNoticeBn(e.target.value)}
-                  className="flex-1 px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#006A4E] text-white text-sm font-bold rounded-lg hover:bg-emerald-800 transition flex items-center justify-center"
-                >
-                  <Plus className="h-4 w-4 mr-1" /> যোগ করুন
-                </button>
-              </form>
-
-              <div className="space-y-2">
-                {newsList.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border text-xs">
-                    <span>{item.textBn}</span>
-                    <button
-                      onClick={() => handleDeleteNotice(item.id)}
-                      className="text-red-500 hover:text-red-700 p-1"
-                    >
-                      <Trash2 className="h-4 w-4" />
+                {/* 1. Update Ticker Notice */}
+                <div className="mb-8">
+                  <label className="block text-xs font-bold text-gray-300 mb-2">
+                    টপবার নোটিশ/স্ক্রলার আপডেট করুন:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={tickerText}
+                      onChange={(e) => setTickerText(e.target.value)}
+                      className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm focus:outline-none"
+                    />
+                    <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center">
+                      <Save className="h-4 w-4 mr-1" /> Save
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Manage Stats */}
-            <div>
-              <h3 className="text-base font-bold mb-3">সংখ্যা ও পরিসংখ্যান আপডেট</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 2. Update Statistics */}
                 <div>
-                  <label className="text-xs font-bold block mb-1">ই-বুক সংখ্যা:</label>
-                  <input
-                    type="number"
-                    value={stats.ebooks}
-                    onChange={(e) => setStats({ ...stats, ebooks: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
+                  <h3 className="text-sm font-bold text-gray-300 mb-3">পরিসংখ্যান ডেটা আপডেট:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-xs text-gray-400 block mb-1">Library Books</label>
+                      <input
+                        type="number"
+                        value={stats.books}
+                        onChange={(e) => setStats({ ...stats, books: Number(e.target.value) })}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 block mb-1">Museum Items</label>
+                      <input
+                        type="number"
+                        value={stats.artifacts}
+                        onChange={(e) => setStats({ ...stats, artifacts: Number(e.target.value) })}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 block mb-1">Publications</label>
+                      <input
+                        type="number"
+                        value={stats.publications}
+                        onChange={(e) => setStats({ ...stats, publications: Number(e.target.value) })}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold block mb-1">জাদুঘর নিদর্শন:</label>
-                  <input
-                    type="number"
-                    value={stats.artifacts}
-                    onChange={(e) => setStats({ ...stats, artifacts: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold block mb-1">ক্যাটাগরি:</label>
-                  <input
-                    type="number"
-                    value={stats.categories}
-                    onChange={(e) => setStats({ ...stats, categories: Number(e.target.value) })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                </div>
-              </div>
-            </div>
 
+              </div>
+            )}
           </div>
         )}
 
