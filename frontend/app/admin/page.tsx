@@ -27,9 +27,9 @@ export default function AdminPage() {
       {!isLoggedIn ? (
         <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl">
           <div className="p-3 bg-amber-500/10 text-amber-400 rounded-full w-fit mx-auto mb-4">
-            <Lock className="h-6 w-6" />
+            <Lock className="h-6 w-6 text-amber-400" />
           </div>
-          <h2 className="text-xl font-bold mb-2">Shah Krishi Library Admin Login</h2>
+          <h2 className="text-xl font-bold mb-2 text-amber-400">Shah Krishi Library Admin</h2>
           <p className="text-xs text-gray-400 mb-6">এডমিন প্যানেলে প্রবেশ করতে পাসওয়ার্ড দিন</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -38,7 +38,7 @@ export default function AdminPage() {
               placeholder="Enter Password (admin123)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-sm text-white focus:outline-none focus:border-amber-500"
             />
             {error && <p className="text-xs text-red-400">ভুল পাসওয়ার্ড!</p>}
             
