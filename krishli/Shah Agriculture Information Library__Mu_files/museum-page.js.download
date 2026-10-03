@@ -1,0 +1,12 @@
+"use script";
+$(document).ready(function() {
+  // lightgallery
+
+  Array.from(museum_categories.data).map((category, index) =>
+    category.museums.map((item, i) =>
+      $(`#lightgallery-museum-${index}-${i}`).lightGallery()
+    )
+  );
+
+  //   end
+});

@@ -1,0 +1,1 @@
+chrome-extension://elpmkbbdldhoiggkjfpgibmjioncklbn/helpers/icons/logo_dark.png

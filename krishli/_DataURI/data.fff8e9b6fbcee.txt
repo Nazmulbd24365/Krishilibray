@@ -1,0 +1,1 @@
+chrome-extension://elpmkbbdldhoiggkjfpgibmjioncklbn/popupView/js/smallTranslateHelper.js

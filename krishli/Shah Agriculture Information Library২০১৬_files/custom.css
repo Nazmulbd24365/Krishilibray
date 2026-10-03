@@ -1,0 +1,311 @@
+:root {
+  --primary-colors: #4caf50;
+  --mete-colors: #007bff;
+  --card-header-colors: #fff;
+  --card-chilr-body-colors: #71c174;
+  --serif: Georgia, serif;
+}
+
+/* some basic usage of these variables */
+
+.bg-primary {
+  padding: 100px 0px;
+
+  background-color: white !important;
+}
+/* .text-primary {
+  color: var(--primary-colors) !important;
+}
+.meta_date {
+  color: var(--mete-colors) !important;
+}
+a {
+  text-decoration: none !important;
+} */
+
+/* a:hover,
+.text-primary:hover,
+a:focus {
+  text-decoration: none !important;
+  cursor: pointer;
+  color: var(--primary-colors) !important;
+ 
+} */
+.card {
+  /*border: 1px solid var(--primary-colors) !important;*/
+}
+.card-bg {
+  /*background-color: var(--primary-colors) !important;*/
+}
+.card-bg .card1-bg {
+  /*background-color: var(--card-chilr-body-colors) !important;*/
+}
+.card-header {
+  /*background-color : var(--primary-colors) !important;
+	border: 1px solid var(--primary-colors) !important;
+    color: white;*/
+}
+.accordion .card {
+  /*margin: 0.75rem 0rem;*/
+}
+.accordion .card-header {
+  /*padding: 0.25rem 1.25rem !important;*/
+}
+
+.accordion .card-header h2 button {
+  /*color: black !important;*/
+}
+
+.card1-bg .card-header h2 button {
+  /*color: white !important;*/
+}
+.card1-bg .collapse .card-body ul li {
+  /*border: 1px solid black;*/
+  /*padding: .5rem;
+    margin-bottom: .10rem;*/
+  /*background-color : var(--primary-colors) !important;*/
+  /*border-radius: .4rem;*/
+  /*border: 1px solid #007bff !important;*/
+  /*border: 1px solid var(--primary-colors) !important;
+    color: var(--primary-colors) !important;*/
+}
+/* .card1-bg .collapse .card-body ul li a,
+.card1-bg .collapse .awarded ul li a {
+  color: var(--primary-colors) !important;
+}
+.card1-bg .collapse .awarded ul li {
+ 
+  padding: 0.5rem;
+  margin-bottom: 1rem !important;
+  
+  border-radius: 0.4rem;
+ 
+  border: 1px solid var(--primary-colors) !important;
+  color: var(--primary-colors) !important;
+} */
+/* .border-bottom {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+.bold {
+  font-weight: bold;
+}
+.text-small-9 {
+  font-size: 0.9rem !important;
+}
+
+.journal-right-details {
+  background: rgba(191, 129, 43, 0.25);
+  padding: 1rem;
+  box-shadow: 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
+}
+.journal-bottom-details {
+  margin-top: 2rem;
+}
+.journal-bottom-details h5 {
+  background: rgba(191, 129, 43, 0.25);
+  padding: 0.8rem 1rem;
+}
+
+.event-date .e-date {
+  border-bottom: 1px solid #fff;
+}
+.event-date .e-date,
+.event-date .e-month {
+  display: block;
+  text-align: center;
+  padding: 5px 0;
+  font-weight: 600;
+  font-size: 18px;
+}
+.event-box {
+  margin-bottom: 15px;
+  display: block;
+  overflow: hidden;
+  padding-left: 70px;
+  position: relative;
+}
+
+.event-date {
+  background: var(--primary-colors);
+  color: #fff;
+  width: 60px;
+  padding: 15px 10px;
+  position: absolute;
+  left: 0;
+}
+
+.event-summary {
+  width: 100%;
+  height: 398px;
+  border: 1px solid #dee2e6;
+  color: #fff;
+}
+.p-3 {
+  padding: 1rem !important;
+} */
+/*.justify-content-center {
+    -ms-flex-pack: center!important;
+    justify-content: center!important;
+}
+.flex-column {
+    -ms-flex-direction: column!important;
+    flex-direction: column!important;
+}
+.d-flex {
+    display: -ms-flexbox!important;
+    display: flex!important;
+}*/
+/* .event-date-time {
+  background: #bf812b;
+  padding: 0.8rem;
+}
+.award-year {
+  font-size: 1.3rem;
+  text-align: center;
+  background: rgba(191, 129, 43, 0.25);
+  color: #333;
+  padding: 10px 0;
+  margin-bottom: 1rem;
+}
+
+.award-member {
+  border: 1px solid rgba(191, 129, 43, 0.15);
+  padding: 3px;
+  background: rgba(191, 129, 43, 0.1);
+  height: 280px;
+  margin-bottom: 15px;
+}
+
+.award-member img {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 1.2rem;
+}
+
+.all_member_body .table-responsive table tbody tr td img {
+  width: 80px;
+}
+ 
+.member-details .modal-body img {
+  width: 175px;
+  margin-bottom: 20px;
+}
+*/
+
+.president-img {
+  float: left;
+  width: 200px;
+  margin-right: 15px;
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+.member-img img {
+  width: 50px;
+  margin-right: auto;
+  margin-left: auto;
+  border: 1px solid #ddd;
+}
+#member_image {
+  float: left;
+  width: 100px;
+  margin-right: 15px;
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+/*
+.page-item.active .page-link {
+  z-index: 3;
+  color: #fff !important;
+  background-color: var(--primary-colors) !important;
+  border-color: var(--primary-colors) !important;
+}
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: var(--primary-colors) !important;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+} */
+
+/* .page-link:hover {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #007bff !important;
+  background-color: var(--primary-colors) !important;
+  border: 1px solid #007bff !important;
+} */
+/*007bff*/
+
+/* .carousel-inner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+} */
+/* .carousel-item {
+  position: relative;
+  display: none;
+  float: left;
+  width: 100%;
+  margin-right: -100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transition: -webkit-transform 0.6s ease-in-out;
+  transition: transform 0.6s ease-in-out;
+  transition: transform 0.6s ease-in-out, -webkit-transform 0.6s ease-in-out;
+}
+.carousel-item-next,
+.carousel-item-prev,
+.carousel-item.active {
+  display: block;
+} */
+/* .w-100 {
+  width: 100% !important;
+} */
+/* .d-block {
+  display: block !important;
+} */
+
+/* img {
+  vertical-align: middle;
+  border-style: none;
+} */
+
+/* .carousel-caption {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  z-index: 10;
+  color: #fff;
+  text-align: center;
+} */
+
+/*.carousel-caption h2 {
+    font-size: 50px;
+    font-weight: 700;
+    text-transform: capitalize;
+}*/
+/* .carousel-caption {
+  padding: 260px 0px 49px 0px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.6);
+} */
+
+.navbar-collapse .active .custom-class {
+  color: #4caf50 !important;
+  font-weight: bold !important;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  color: #4caf50 !important;
+  background-color: white !important;
+  font-weight: bold !important;
+}

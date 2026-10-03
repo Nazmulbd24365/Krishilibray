@@ -1,682 +1,1214 @@
-"use client";
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, BookOpen, Landmark, Sprout, ArrowRight, Sun, Moon, 
+  ChevronLeft, ChevronRight, ChevronDown, Globe, X, UserCheck,
+  CloudSun, LayoutDashboard, FileText, Package, Settings, Plus,
+  Trash2, Edit3, Eye, CheckCircle, RefreshCw, LogOut, Download,
+  Sliders, Image as ImageIcon, ExternalLink, ShieldCheck, Database
+} from 'lucide-react';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-
-type Language = "bn" | "en";
-
-interface WeatherData {
-  cityBn: string;
-  cityEn: string;
-  temp: number;
-  conditionBn: string;
-  conditionEn: string;
-}
-
-// विभागों का मौसम डेटा
-const DIVISION_WEATHER: WeatherData[] = [
-  { cityBn: "ঢাকা", cityEn: "Dhaka", temp: 28, conditionBn: "ঘোলাটে রোদ", conditionEn: "Hazy Sun" },
-  { cityBn: "রাজশাহী", cityEn: "Rajshahi", temp: 30, conditionBn: "রৌদ্রোজ্জ্বল", conditionEn: "Sunny" },
-  { cityBn: "চট্টগ্রাম", cityEn: "Chittagong", temp: 29, conditionBn: "আংশিক মেঘলা", conditionEn: "Partly Cloudy" },
-  { cityBn: "ময়মনসিংহ", cityEn: "Mymensingh", temp: 28, conditionBn: "আংশিক মেঘলা", conditionEn: "Partly Cloudy" },
-  { cityBn: "খুলনা", cityEn: "Khulna", temp: 28, conditionBn: "মেঘলা", conditionEn: "Cloudy" },
-  { cityBn: "বরিশাল", cityEn: "Barisal", temp: 27, conditionBn: "হালকা বৃষ্টি", conditionEn: "Light Rain" },
-  { cityBn: "সিলেট", cityEn: "Sylhet", temp: 26, conditionBn: "বৃষ্টি", conditionEn: "Rain" },
-  { cityBn: "রংপুর", cityEn: "Rangpur", temp: 29, conditionBn: "রৌদ্রোজ্জ্বল", conditionEn: "Sunny" },
+const INITIAL_NEWS = [
+  { id: '1', textBn: 'শাহ্ কৃষি লাইব্রেরিতে যুক্ত হলো নতুন ৫০০টি বিরল ডিজিটাল ই-বুক।', textEn: '500 rare digital e-books added to Shah Agriculture Library.', active: true },
+  { id: '2', textBn: 'আগামী সপ্তাহে অনুষ্ঠিত হতে যাচ্ছে জাতীয় কৃষি জাদুঘর প্রদর্শনী ২০২৬।', textEn: 'National Agri Museum Exhibition 2026 to be held next week.', active: true },
+  { id: '3', textBn: 'নতুন ডিজিটাল আর্কাইভ সংস্করণে যুক্ত হলো ঐতিহ্যবাহী কৃষি যন্ত্রপাতির ক্যাটালগ।', textEn: 'Catalog of traditional farming tools added in new archive version.', active: true },
+  { id: '4', textBn: 'জৈব কৃষি ও আধুনিক বীজ সংরক্ষণ বিষয়ক ই-লার্নিং মডিউল উন্মুক্ত।', textEn: 'E-learning module on organic farming & seed preservation launched.', active: true },
 ];
 
-const NOTICES = [
-  {
-    bn: "📢 কৃষি লাইব্রেরির নতুন অনলাইন পোর্টাল চালুর ঘোষণা।",
-    en: "📢 Announcement of the launch of Krishi Library's new online portal.",
-  },
-  {
-    bn: "🌾 আগামী সপ্তাহে শাহ কৃষি জাদুঘরে নতুন প্রত্নতাত্ত্বিক প্রদর্শনী শুরু হবে।",
-    en: "🌾 A new archaeological exhibition starts at Shah Krishi Museum next week.",
-  },
-  {
-    bn: "📚 দুর্লভ কৃষি বিষয়ক বইয়ের ই-বুক ক্যাটালগ আপডেট করা হয়েছে।",
-    en: "📚 The e-book catalog of rare agricultural books has been updated.",
-  },
+const INITIAL_BOOKS = [
+  { id: 'b1', titleBn: 'আবহমান বাংলার ঐতিহ্যবাহী কৃষি সরঞ্জাম', titleEn: 'Traditional Farming Tools of Bengal', category: 'ইতিহাস ও ঐতিহ্য', author: 'অধ্যাপক ড. শাহজাহান আলী', pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop' },
+  { id: 'b2', titleBn: 'জৈব কৃষি ও মাটি ব্যবস্থাপনা প্রযুক্তি', titleEn: 'Organic Agriculture & Soil Management', category: 'কৃষি প্রযুক্তি', author: 'ড. আব্দুর রহিম', pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', cover: 'https://images.unsplash.com/photo-1592417817098-8f3d6928e469?q=80&w=600&auto=format&fit=crop' },
+  { id: 'b3', titleBn: 'বাংলাদেশে ধান চাষের বিবর্তন ও বীজ বিজ্ঞান', titleEn: 'Evolution of Paddy Farming in Bangladesh', category: 'বীজ বিজ্ঞান', author: 'ড. ফাতিমা বেগম', pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', cover: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=600&auto=format&fit=crop' },
 ];
 
-const HERO_SLIDES = [
-  {
-    id: 1,
-    imageUrl: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600",
-    badgeBn: "স্বাগতম জ্ঞানভাণ্ডারে",
-    badgeEn: "Welcome to Knowledge Hub",
-    titleBn: "কৃষি লাইব্রেরিতে আপনাকে স্বাগতম",
-    titleEn: "Welcome to Krishi Library",
-    subtitleBn: "সংগ্রহে থাকা শত শত কৃষি বিষয়ক গবেষণা ও দুর্লভ বই থেকে তথ্য খুঁজুন।",
-    subtitleEn: "Search information from hundreds of agricultural research and rare books.",
-  },
-  {
-    id: 2,
-    imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600",
-    badgeBn: "ঐতিহ্য ও সংস্কৃতি",
-    badgeEn: "Heritage & Culture",
-    titleBn: "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর",
-    titleEn: "Shah Krishi Information Library & Museum",
-    subtitleBn: "কৃষি ঐতিহ্যের সুরক্ষা এবং সমৃদ্ধ জ্ঞানভাণ্ডারের বিশ্বস্ত ঠিকানা।",
-    subtitleEn: "Preserving agricultural heritage and trusted destination of enriched knowledge.",
-  },
+const INITIAL_ARTIFACTS = [
+  { id: 'a1', titleBn: 'ঐতিহ্যবাহী কাঠের লাঙল ও জোয়াল', titleEn: 'Traditional Wooden Plough & Yoke', era: '১৯ শতক (১50 বছর প্রাচীন)', origin: 'পাবনা, বাংলাদেশ', image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800&auto=format&fit=crop', desc: 'গ্রাম বাংলার হাজার বছরের পলি মাটিতে বীজ বোনার মূল হাতিয়ার হিসেবে এই বিশেষ বাবলা কাঠের তৈরি লাঙল ব্যবহৃত হতো।' },
+  { id: 'a2', titleBn: 'সংগ্রামী কৃষকের বাঁশের তৈরি মাথাল', titleEn: 'Bamboo Farmer Hat (Mathal)', era: '২০ শতক', origin: 'রাজশাহী, বাংলাদেশ', image: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?q=80&w=800&auto=format&fit=crop', desc: 'কঠিন রোদ ও বৃষ্টি থেকে মাথা রক্ষা করতে হাতে বোনা বাঁশের তৈরি ঐতিহ্যবাহী টুপি।' },
+  { id: 'a3', titleBn: 'সরিষা ও তিল মাড়াইয়ের কাঠের ঘানি', titleEn: 'Traditional Wooden Oil Press', era: '১৮ শতক', origin: 'বগুড়া, বাংলাদেশ', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop', desc: 'গরু দিয়ে ঘুরিয়ে প্রাকৃতিক উপায়ে খাঁটি তেল নিষ্কাশন করার বিশালাকার কাঠের তৈরি ঘানি।' },
 ];
 
-const ABOUT_IMAGES = [
-  "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=800",
-  "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?q=80&w=800",
-  "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=800"
+const INITIAL_SLIDES = [
+  { id: 1, titleBn: 'কৃষি জ্ঞান ও আবহমান বাংলার ইতিহাসের ডিজিটাল সংরক্ষণাগার', titleEn: 'Digital Archive of Agricultural Knowledge & Heritage', imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1600&auto=format&fit=crop' },
+  { id: 2, titleBn: 'ঐতিহ্যবাহী বিলুপ্তপ্রায় কৃষি যন্ত্রপাতি ও গ্রামীণ নিদর্শন', titleEn: 'Traditional Endangered Agricultural Artifacts & Heritage', imageUrl: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1600&auto=format&fit=crop' },
+  { id: 3, titleBn: 'জ্ঞানার্জনের অনন্য মাধ্যম ও সমৃদ্ধ ডিজিটাল লাইব্রেরি ক্যাটালগ', titleEn: 'Unique Educational Platform & E-Book Library Catalog', imageUrl: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?q=80&w=1600&auto=format&fit=crop' },
 ];
 
-const TESTIMONIALS = [
-  {
-    id: 1,
-    nameBn: "ড. মো: আব্দুর রশীদ",
-    nameEn: "Dr. Md. Abdur Rashid",
-    roleBn: "কৃষি বিজ্ঞানী, BARC",
-    roleEn: "Agricultural Scientist, BARC",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200",
-    commentBn: "শাহ কৃষি পাঠাগার প্রান্তিক কৃষকদের তথ্য ও আধুনিক কৃষির মাঝে একটি অসাধারণ মেলবন্ধন তৈরি করেছে। এটি সত্যিই প্রশংসনীয়।",
-    commentEn: "Shah Krishi Library has built a bridge between marginal farmers and modern agricultural information. Highly commendable.",
-  },
-  {
-    id: 2,
-    nameBn: "অধ্যাপক ড. রফিকুল ইসলাম",
-    nameEn: "Prof. Dr. Rafiqul Islam",
-    roleBn: "বাংলাদেশ কৃষি বিশ্ববিদ্যালয়",
-    roleEn: "Bangladesh Agricultural University",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200",
-    commentBn: "গবেষক ও শিক্ষার্থীদের জন্য এখানে থাকা দুর্লভ বই এবং ঐতিহ্যবাহী কৃষি যন্ত্রপাতির সংগ্রহ এক অমূল্য সম্পদ।",
-    commentEn: "The collection of rare books and traditional farm equipment here is an invaluable resource for researchers and students.",
-  }
-];
+export default function App() {
+  const [activeView, setActiveView] = useState('frontend'); // 'frontend' or 'admin'
+  const [adminTab, setAdminTab] = useState('overview'); // 'overview', 'news', 'books', 'artifacts', 'settings'
+  const [darkMode, setDarkMode] = useState(false);
+  const [lang, setLang] = useState('bn'); // 'bn' or 'en'
 
-export default function HomePage() {
-  const [mounted, setMounted] = useState(false);
-  const [lang, setLang] = useState<Language>("bn");
-  const [weatherList, setWeatherList] = useState<WeatherData[]>(DIVISION_WEATHER);
-  const [weatherIdx, setWeatherIdx] = useState(0);
-  const [noticeIdx, setNoticeIdx] = useState(0);
-  const [heroIdx, setHeroIdx] = useState(0);
-  const [aboutImgIdx, setAboutImgIdx] = useState(0);
-  const [testimonialIdx, setTestimonialIdx] = useState(0);
-  const [showTopBtn, setShowTopBtn] = useState(false);
-  
-  // Header background toggle on scroll
-  const [isScrolled, setIsScrolled] = useState(false);
+  // Dynamic CMS Data States (persisted to localStorage)
+  const [newsList, setNewsList] = useState(() => {
+    const saved = localStorage.getItem('shah_news');
+    return saved ? JSON.parse(saved) : INITIAL_NEWS;
+  });
 
-  // Counters
-  const [counts, setCounts] = useState({ books: 0, ebook: 0, museum: 0, readers: 0 });
+  const [booksList, setBooksList] = useState(() => {
+    const saved = localStorage.getItem('shah_books');
+    return saved ? JSON.parse(saved) : INITIAL_BOOKS;
+  });
+
+  const [artifactsList, setArtifactsList] = useState(() => {
+    const saved = localStorage.getItem('shah_artifacts');
+    return saved ? JSON.parse(saved) : INITIAL_ARTIFACTS;
+  });
+
+  const [slides, setSlides] = useState(() => {
+    const saved = localStorage.getItem('shah_slides');
+    return saved ? JSON.parse(saved) : INITIAL_SLIDES;
+  });
+
+  const [counters, setCounters] = useState(() => {
+    const saved = localStorage.getItem('shah_counters');
+    return saved ? JSON.parse(saved) : { ebooks: 1500, museum: 1000, categories: 50 };
+  });
+
+  // Local Storage Synchronizer
+  useEffect(() => {
+    localStorage.setItem('shah_news', JSON.stringify(newsList));
+  }, [newsList]);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    localStorage.setItem('shah_books', JSON.stringify(booksList));
+  }, [booksList]);
 
-  // Scroll listener for Header background & Back-to-Top Button
   useEffect(() => {
-    const handleScroll = () => {
-      // Header background scroll detection
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+    localStorage.setItem('shah_artifacts', JSON.stringify(artifactsList));
+  }, [artifactsList]);
 
-      // Back to top button visibility
-      if (window.scrollY > 300) {
-        setShowTopBtn(true);
-      } else {
-        setShowTopBtn(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // IP based Weather Fetch
   useEffect(() => {
-    const fetchUserLocation = async () => {
+    localStorage.setItem('shah_slides', JSON.stringify(slides));
+  }, [slides]);
+
+  useEffect(() => {
+    localStorage.setItem('shah_counters', JSON.stringify(counters));
+  }, [counters]);
+
+  // Weather States
+  const [weatherList, setWeatherList] = useState([]);
+  const [currentWeatherIndex, setCurrentWeatherIndex] = useState(0);
+  const [weatherLoading, setWeatherLoading] = useState(true);
+
+  // Header & Search
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const searchTimeoutRef = useRef(null);
+
+  // Ticker state
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+
+  // Slider State
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [animationType, setAnimationType] = useState(0);
+  const [showSubtitle, setShowSubtitle] = useState(false);
+
+  // Modals / Preview States
+  const [selectedBookPdf, setSelectedBookPdf] = useState(null);
+  const [selectedArtifact, setSelectedArtifact] = useState(null);
+
+  // Admin Modals
+  const [newsModal, setNewsModal] = useState({ open: false, item: null });
+  const [bookModal, setBookModal] = useState({ open: false, item: null });
+  const [artifactModal, setArtifactModal] = useState({ open: false, item: null });
+
+  useEffect(() => {
+    async function fetchAllWeather() {
       try {
-        const res = await fetch("https://ipapi.co/json/", { cache: "no-store" });
-        if (!res.ok) throw new Error("Network error");
-        const data = await res.json();
-        
-        if (data && data.city) {
-          const userLocWeather: WeatherData = {
-            cityBn: `${data.city} (আপনার স্থান)`,
-            cityEn: `${data.city} (Your Location)`,
-            temp: 29,
-            conditionBn: "আংশিক মেঘলা",
-            conditionEn: "Partly Cloudy",
-          };
-          setWeatherList([userLocWeather, ...DIVISION_WEATHER]);
+        setWeatherLoading(true);
+        let userCity = lang === 'bn' ? 'ঢাকা (আপনার স্থান)' : 'Dhaka (Your Location)';
+        let userLat = 23.8103;
+        let userLon = 90.4125;
+
+        try {
+          const ipRes = await fetch('https://ipapi.co/json/');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData.latitude && ipData.longitude) {
+              userLat = ipData.latitude;
+              userLon = ipData.longitude;
+              userCity = ipData.city || userCity;
+            }
+          }
+        } catch (e) {
+          console.log('IP Location fallback');
         }
-      } catch (error) {
-        console.warn("Weather location fetch failed:", error);
+
+        const divisions = [
+          { nameBn: userCity, nameEn: userCity, lat: userLat, lon: userLon },
+          { nameBn: 'ঢাকা', nameEn: 'Dhaka', lat: 23.8103, lon: 90.4125 },
+          { nameBn: 'চট্টগ্রাম', nameEn: 'Chittagong', lat: 22.3569, lon: 91.7832 },
+          { nameBn: 'রাজশাহী', nameEn: 'Rajshahi', lat: 24.3636, lon: 88.6241 },
+          { nameBn: 'খুলনা', nameEn: 'Khulna', lat: 22.8456, lon: 89.5403 },
+          { nameBn: 'বরিশাল', nameEn: 'Barisal', lat: 22.7010, lon: 90.3535 },
+          { nameBn: 'সিলেট', nameEn: 'Sylhet', lat: 24.8949, lon: 91.8687 },
+          { nameBn: 'রংপুর', nameEn: 'Rangpur', lat: 25.7439, lon: 89.2752 },
+        ];
+
+        const fetchedData = [];
+        for (const div of divisions) {
+          try {
+            const res = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${div.lat}&longitude=${div.lon}&current_weather=true`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              if (data.current_weather) {
+                fetchedData.push({
+                  city: lang === 'bn' ? div.nameBn : div.nameEn,
+                  temp: Math.round(data.current_weather.temperature),
+                });
+              }
+            }
+          } catch (err) {
+            console.error('Division weather error:', err);
+          }
+        }
+
+        if (fetchedData.length > 0) {
+          setWeatherList(fetchedData);
+        } else {
+          setWeatherList([{ city: lang === 'bn' ? 'ঢাকা' : 'Dhaka', temp: 28 }]);
+        }
+      } catch (err) {
+        setWeatherList([{ city: lang === 'bn' ? 'ঢাকা' : 'Dhaka', temp: 28 }]);
+      } finally {
+        setWeatherLoading(false);
       }
-    };
+    }
 
-    fetchUserLocation();
-  }, []);
+    fetchAllWeather();
+  }, [lang]);
 
-  // 4 Sec Interval for Weather & Notice Slider
+  // Weather Rotation
   useEffect(() => {
-    const weatherTimer = setInterval(() => {
-      setWeatherIdx((prev) => (prev + 1) % weatherList.length);
-    }, 4000);
-
-    const noticeTimer = setInterval(() => {
-      setNoticeIdx((p) => (p + 1) % NOTICES.length);
-    }, 4000);
-
-    return () => {
-      clearInterval(weatherTimer);
-      clearInterval(noticeTimer);
-    };
+    if (weatherList.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentWeatherIndex((prev) => (prev + 1) % weatherList.length);
+      }, 4000);
+      return () => clearInterval(timer);
+    }
   }, [weatherList]);
 
-  // Hero & Other Sliders
+  // Active News ticker logic
+  const activeNews = newsList.filter((n) => n.active);
+
   useEffect(() => {
-    const heroTimer = setInterval(() => setHeroIdx((p) => (p + 1) % HERO_SLIDES.length), 5000);
-    const aboutTimer = setInterval(() => setAboutImgIdx((p) => (p + 1) % ABOUT_IMAGES.length), 3500);
-    const testmTimer = setInterval(() => setTestimonialIdx((p) => (p + 1) % TESTIMONIALS.length), 4500);
+    if (activeNews.length === 0) return;
+    const newsTimer = setInterval(() => {
+      setCurrentNewsIndex((prev) => (prev + 1) % activeNews.length);
+    }, 5000);
+    return () => clearInterval(newsTimer);
+  }, [activeNews.length]);
+
+  // Header Scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  // Slider rotation
+  useEffect(() => {
+    setShowSubtitle(false);
+    const subtitleTimer = setTimeout(() => setShowSubtitle(true), 1500);
+
+    let slideTimer;
+    if (!isHovered && slides.length > 0) {
+      slideTimer = setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+        setAnimationType((prev) => (prev + 1) % 3);
+      }, 6000);
+    }
 
     return () => {
-      clearInterval(heroTimer);
-      clearInterval(aboutTimer);
-      clearInterval(testmTimer);
+      clearTimeout(subtitleTimer);
+      if (slideTimer) clearTimeout(slideTimer);
     };
-  }, []);
+  }, [currentSlide, isHovered, slides.length]);
 
-  // Counter Animation
-  useEffect(() => {
-    let start = 0;
-    const duration = 2000;
-    const interval = 30;
-    const steps = duration / interval;
+  const subtitleAnimations = [
+    'animate-in fade-in slide-in-from-bottom-6 duration-700',
+    'animate-in fade-in slide-in-from-left-8 duration-700',
+    'animate-in fade-in zoom-in-75 duration-700',
+  ];
 
-    const target = { books: 2450, ebook: 850, museum: 320, readers: 15000 };
-    const increment = {
-      books: target.books / steps,
-      ebook: target.ebook / steps,
-      museum: target.museum / steps,
-      readers: target.readers / steps,
+  const handleSaveNews = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newItem = {
+      id: newsModal.item ? newsModal.item.id : Date.now().toString(),
+      textBn: formData.get('textBn'),
+      textEn: formData.get('textEn'),
+      active: formData.get('active') === 'on',
     };
 
-    const counterTimer = setInterval(() => {
-      start++;
-      setCounts({
-        books: Math.min(Math.floor(increment.books * start), target.books),
-        ebook: Math.min(Math.floor(increment.ebook * start), target.ebook),
-        museum: Math.min(Math.floor(increment.museum * start), target.museum),
-        readers: Math.min(Math.floor(increment.readers * start), target.readers),
-      });
-
-      if (start >= steps) clearInterval(counterTimer);
-    }, interval);
-
-    return () => clearInterval(counterTimer);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (newsModal.item) {
+      setNewsList(newsList.map((n) => (n.id === newItem.id ? newItem : n)));
+    } else {
+      setNewsList([newItem, ...newsList]);
+    }
+    setNewsModal({ open: false, item: null });
   };
 
-  const activeWeather = weatherList[weatherIdx] || weatherList[0];
+  const handleDeleteNews = (id) => {
+    setNewsList(newsList.filter((n) => n.id !== id));
+  };
 
-  const formattedDate = mounted
-    ? new Date().toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
+  const handleSaveBook = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newItem = {
+      id: bookModal.item ? bookModal.item.id : Date.now().toString(),
+      titleBn: formData.get('titleBn'),
+      titleEn: formData.get('titleEn'),
+      category: formData.get('category'),
+      author: formData.get('author'),
+      pdfUrl: formData.get('pdfUrl'),
+      cover: formData.get('cover') || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop',
+    };
+
+    if (bookModal.item) {
+      setBooksList(booksList.map((b) => (b.id === newItem.id ? newItem : b)));
+    } else {
+      setBooksList([newItem, ...booksList]);
+    }
+    setBookModal({ open: false, item: null });
+  };
+
+  const handleDeleteBook = (id) => {
+    setBooksList(booksList.filter((b) => b.id !== id));
+  };
+
+  const handleSaveArtifact = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newItem = {
+      id: artifactModal.item ? artifactModal.item.id : Date.now().toString(),
+      titleBn: formData.get('titleBn'),
+      titleEn: formData.get('titleEn'),
+      era: formData.get('era'),
+      origin: formData.get('origin'),
+      image: formData.get('image') || 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800&auto=format&fit=crop',
+      desc: formData.get('desc'),
+    };
+
+    if (artifactModal.item) {
+      setArtifactsList(artifactsList.map((a) => (a.id === newItem.id ? newItem : a)));
+    } else {
+      setArtifactsList([newItem, ...artifactsList]);
+    }
+    setArtifactModal({ open: false, item: null });
+  };
+
+  const handleDeleteArtifact = (id) => {
+    setArtifactsList(artifactsList.filter((a) => a.id !== id));
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-800 font-sans relative">
+    <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-gray-800'} min-h-screen font-sans transition-colors duration-300 overflow-x-hidden`}>
       
-      {/* ================= DYNAMIC HEADER (TRANSPARENT ON TOP, SOLID ON SCROLL) ================= */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
-          isScrolled
-            ? "bg-[#012213]/95 backdrop-blur-md shadow-xl border-b border-emerald-900/60"
-            : "bg-transparent backdrop-blur-none shadow-none border-b border-transparent"
-        }`}
-      >
-        
-        {/* TOP BAR */}
-        <div className="text-white py-2 px-4 border-b border-white/10 text-xs sm:text-sm">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-            
-            {/* WEATHER */}
-            <div className="flex items-center gap-2 min-w-[250px]">
-              <span className="bg-emerald-800/80 text-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-bold border border-emerald-600/60 backdrop-blur-sm">
-                📍 {lang === "bn" ? "আবহাওয়া" : "Weather"}
-              </span>
-              <div className="flex items-center gap-1.5 font-medium transition-all duration-500">
-                <span className="font-bold text-amber-300">
-                  {lang === "bn" ? activeWeather.cityBn : activeWeather.cityEn}:
-                </span>
-                <span className="text-white font-semibold">{activeWeather.temp}°C</span>
-                <span className="text-emerald-300 text-xs">
-                  ({lang === "bn" ? activeWeather.conditionBn : activeWeather.conditionEn})
-                </span>
-              </div>
-            </div>
-
-            {/* NOTICE SLIDER 7s) */}
-            <div className="flex-1 text-center overflow-hidden h-6 relative w-full max-w-lg">
-              {NOTICES.map((notice, idx) => (
-                <div
-                  key={idx}
-                  className={`absolute inset-0 transition-all duration-700 ease-in-out flex items-center justify-center ${
-                    idx === noticeIdx
-                      ? "opacity-100 transform translate-y-0"
-                      : "opacity-0 transform -translate-y-4 pointer-events-none"
-                  }`}
-                >
-                  <p className="text-amber-200 font-medium truncate px-2">
-                    {lang === "bn" ? notice.bn : notice.en}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* DATE & SOCIAL */}
-            <div className="flex items-center gap-3 text-emerald-300 text-xs min-w-[200px] justify-end">
-              <span>🗓️ {formattedDate}</span>
-              <div className="flex items-center gap-1.5 font-bold text-white border-l border-white/20 pl-3">
-                <span className="hover:text-amber-400 cursor-pointer">FB</span>
-                <span>•</span>
-                <span className="hover:text-amber-400 cursor-pointer">YT</span>
-              </div>
-            </div>
-
-          </div>
+      {/* GLOBAL SYSTEM BAR FOR TAB SWITCHING (PUBLIC FRONTEND vs ADMIN CMS) */}
+      <div className="bg-gray-900 text-gray-200 text-xs py-1.5 px-4 border-b border-gray-800 flex justify-between items-center z-[100] relative">
+        <div className="flex items-center space-x-3">
+          <span className="flex items-center space-x-1.5 text-emerald-400 font-bold">
+            <ShieldCheck className="h-4 w-4" />
+            <span>শাহ্ কৃষি পাঠাগার ও জাদুঘর পোর্টাল</span>
+          </span>
+          <span className="hidden sm:inline-block text-gray-500">|</span>
+          <span className="hidden sm:inline-block text-gray-400">
+            {activeView === 'frontend' ? 'লাইব ওয়েবসাইট মোড' : 'ব্যাকএন্ড সিএমএস মোড (CMS Control Panel)'}
+          </span>
         </div>
 
-        {/* MAIN NAV */}
-        <div className="py-3 px-4 sm:px-6 text-white">
-          <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
-            
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl border border-emerald-400 shadow-md">
-                🌾
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-white leading-none">
-                  {lang === "bn" ? "কৃষি লাইব্রেরি" : "Krishi Library"}
-                </h1>
-                <p className="text-[11px] text-emerald-200 font-medium mt-0.5">
-                  {lang === "bn"
-                    ? "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর"
-                    : "Shah Krishi Information Library & Museum"}
-                </p>
-              </div>
-            </Link>
-
-            <nav className="flex flex-wrap items-center gap-4 sm:gap-6 font-semibold text-sm">
-              <Link href="/" className="hover:text-amber-300 transition text-amber-300 font-bold">
-                {lang === "bn" ? "হোম" : "Home"}
-              </Link>
-              <Link href="/about" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "আমাদের সম্পর্কে" : "About Us"}
-              </Link>
-              <Link href="/library" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "লাইব্রেরি ক্যাটালগ" : "Library Catalog"}
-              </Link>
-              <Link href="/museum" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "কৃষি মিউজিয়াম" : "Krishi Museum"}
-              </Link>
-              <Link href="/publication" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "পাবলিকেশন" : "Publications"}
-              </Link>
-              <Link href="/achievements" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "অর্জনাদি" : "Achievements"}
-              </Link>
-              <Link href="/program" className="hover:text-amber-300 transition">
-                {lang === "bn" ? "কর্মসূচি" : "Programs"}
-              </Link>
-
-              {/* LANGUAGE TOGGLE */}
-              <button
-                onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-full font-bold shadow-md transition transform hover:scale-105 border border-amber-400 ml-2"
-              >
-                🌐 {lang === "bn" ? "English" : "বাংলা"}
-              </button>
-            </nav>
-
-          </div>
-        </div>
-
-      </header>
-
-      {/* ================= HERO SLIDER ================= */}
-      <section className="relative w-full h-[520px] sm:h-[600px] overflow-hidden bg-slate-950 pt-20">
-        {HERO_SLIDES.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === heroIdx ? "opacity-100 z-10 scale-105" : "opacity-0 z-0 scale-100"
-            } transform transition-transform duration-[7000ms]`}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setActiveView('frontend')}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center space-x-1 ${
+              activeView === 'frontend'
+                ? 'bg-[#006A4E] text-white shadow'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
           >
-            <img src={slide.imageUrl} alt="Banner" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#011c10] via-black/40 to-black/30" />
-            
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4 pt-16 pb-8">
-              <span className="bg-amber-500/20 text-amber-300 border border-amber-400/40 px-4 py-1 rounded-full text-xs sm:text-sm font-semibold tracking-wide backdrop-blur-md mb-3 animate-pulse">
-                {lang === "bn" ? slide.badgeBn : slide.badgeEn}
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-black text-amber-300 drop-shadow-md tracking-tight leading-tight max-w-4xl">
-                {lang === "bn" ? slide.titleBn : slide.titleEn}
-              </h2>
-              <p className="text-emerald-100 mt-3 text-sm sm:text-xl max-w-2xl font-light drop-shadow">
-                {lang === "bn" ? slide.subtitleBn : slide.subtitleEn}
-              </p>
-            </div>
-          </div>
-        ))}
+            <Eye className="h-3.5 w-3.5" />
+            <span>{lang === 'bn' ? 'ওয়েবসাইট ফ্রন্টএন্ড' : 'Public Frontend'}</span>
+          </button>
 
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-2">
-          {HERO_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setHeroIdx(i)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === heroIdx ? "bg-amber-400 w-8" : "bg-white/50 w-2 hover:bg-white"
-              }`}
-            />
-          ))}
+          <button
+            onClick={() => setActiveView('admin')}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center space-x-1 ${
+              activeView === 'admin'
+                ? 'bg-[#F42A41] text-white shadow'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            <LayoutDashboard className="h-3.5 w-3.5" />
+            <span>{lang === 'bn' ? 'অ্যাডমিন ড্যাশবোর্ড' : 'Admin Panel (CMS)'}</span>
+          </button>
         </div>
-      </section>
+      </div>
 
-      {/* ================= COUNTER CARDS ================= */}
-      <section className="bg-slate-100 py-10 px-4 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-emerald-100 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 flex items-center gap-4 group">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-xl flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition shrink-0">
-                📚
-              </div>
-              <div>
-                <div className="text-3xl font-black text-emerald-950 tracking-tight">
-                  {counts.books.toLocaleString()}+
-                </div>
-                <div className="text-xs font-bold text-gray-600 mt-0.5 uppercase tracking-wider">
-                  {lang === "bn" ? "মুদ্রিত বই ও জার্নাল" : "Printed Books & Journals"}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-emerald-100 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 flex items-center gap-4 group">
-              <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-emerald-700 text-white rounded-xl flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition shrink-0">
-                💻
-              </div>
-              <div>
-                <div className="text-3xl font-black text-emerald-950 tracking-tight">
-                  {counts.ebook.toLocaleString()}+
-                </div>
-                <div className="text-xs font-bold text-gray-600 mt-0.5 uppercase tracking-wider">
-                  {lang === "bn" ? "ডিজিটাল ই-বুক" : "Digital E-Books"}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-emerald-100 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 flex items-center gap-4 group">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-600 to-green-800 text-white rounded-xl flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition shrink-0">
-                🏛️
-              </div>
-              <div>
-                <div className="text-3xl font-black text-emerald-950 tracking-tight">
-                  {counts.museum.toLocaleString()}+
-                </div>
-                <div className="text-xs font-bold text-gray-600 mt-0.5 uppercase tracking-wider">
-                  {lang === "bn" ? "মিউজিয়াম স্মারক" : "Museum Artifacts"}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-amber-200 hover:border-amber-400 hover:shadow-xl transition-all duration-300 flex items-center gap-4 group">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-xl flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition shrink-0">
-                👥
-              </div>
-              <div>
-                <div className="text-3xl font-black text-amber-600 tracking-tight">
-                  {counts.readers.toLocaleString()}+
-                </div>
-                <div className="text-xs font-bold text-gray-600 mt-0.5 uppercase tracking-wider">
-                  {lang === "bn" ? "সক্রিয় পাঠক ও গবেষক" : "Active Readers & Researchers"}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ================= ABOUT US ================= */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-2xl shadow-lg border border-emerald-100 overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 p-6 sm:p-10 items-center">
+      {/* ========================================================================= */}
+      {/* 1. PUBLIC FRONTEND VIEW SECTION                                          */}
+      {/* ========================================================================= */}
+      {activeView === 'frontend' && (
+        <div className="relative">
           
-          <div className="relative h-[320px] sm:h-[380px] rounded-xl overflow-hidden shadow-md">
-            {ABOUT_IMAGES.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt="About Us"
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                  idx === aboutImgIdx ? "opacity-100" : "opacity-0"
-                }`}
-              />
-            ))}
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-              {ABOUT_IMAGES.map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-2.5 h-2.5 rounded-full ${i === aboutImgIdx ? "bg-amber-400 w-6" : "bg-white/70"} transition-all`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-              {lang === "bn" ? "আমাদের কথা" : "About Us"}
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-950 mt-3 mb-4">
-              {lang === "bn" ? "আমাদের সম্পর্কে" : "About Our Initiative"}
-            </h3>
-            <p className="text-gray-700 leading-relaxed text-sm sm:text-base text-justify">
-              {lang === "bn"
-                ? "আমি মো. জাহাঙ্গীর আলম শাহ্। একবারে নিভৃত পল্লিতে কৃষকের ঘরে জন্মগ্রহণ করি। জন্মের পর থেকেই কৃষি ও কৃষকের চাষ-বাস এবং প্রান্তিক চাষীদের জীবন ব্যবস্থার অতীব করুণ ও রুগ্নচিত্র দেখেছি খুব কাছ থেকে। শিশুকাল থেকেই কৃষির প্রতি অনুরাগী ছিলাম। পাশাপাশি কৃষি শিক্ষার ভাণ্ডারের অভাব আমার জীবনকে দারুণভাবে স্পর্শ করতো। মূলত সে কারণেই কৃষি কাঠামোর দ্রুত পরিবর্তনে কৃষক উপযোগী পাঠাগার ও জাদুঘর প্রতিষ্ঠা করি। ২০০৮ খ্রিস্টাব্দে কৃষিতথ্য পাঠাগার ও জাদুঘর কার্যক্রম শুরু করে এজাবতকাল নানা আয়োজনের মাধ্যমে কৃষি শিক্ষা এবং পরিবেশ উন্নয়নে ভূমিকা রেখে চলেছে।"
-                : "I am Md. Jahangir Alam Shah. Born in a farmer's family in a remote village, I experienced the challenges of farming life closely. Since childhood, I possessed a deep passion for agriculture. To bridge the gap in agricultural knowledge, I established this library and museum in 2008, contributing continuously to agricultural education and environmental development."}
-            </p>
-
-            <Link href="/about">
-              <button className="mt-6 bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-2.5 rounded-lg transition shadow-md flex items-center gap-2">
-                {lang === "bn" ? "বিস্তারিত জানতে ➔" : "Read More ➔"}
-              </button>
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ================= ৩টি প্রফেশনাল কার্ড (লক্ষ্য, উদ্দেশ্য, গন্তব্য) ================= */}
-      <section className="bg-gradient-to-b from-[#012213] via-[#02331d] to-[#011a0e] text-white py-20 px-4 relative overflow-hidden">
-        
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full uppercase tracking-widest">
-              {lang === "bn" ? "আমাদের মূল ভিত্তি" : "Our Core Pillars"}
-            </span>
-            <h3 className="text-3xl sm:text-4xl font-black text-white mt-3">
-              {lang === "bn" ? "লক্ষ্য, উদ্দেশ্য ও গন্তব্য" : "Mission, Vision & Goal"}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Sticky Navigation Header */}
+          <div className={`fixed top-8 left-0 w-full z-50 transition-all duration-300 shadow-md ${showHeader ? 'translate-y-0' : '-translate-y-full'}`}>
             
-            <div className="group relative bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/50 flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl mb-6 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform">
-                  🎯
+            {/* Topbar: Weather & Date (Solid White Background) */}
+            <div className="bg-white text-gray-900 text-xs font-extrabold py-2 px-4 sm:px-8 border-b border-gray-200">
+              <div className="max-w-7xl mx-auto flex justify-between items-center">
+                <div className="flex items-center space-x-2 text-[#006A4E]">
+                  <CloudSun className="h-4 w-4 text-[#006A4E]" />
+                  {weatherLoading ? (
+                    <span>আবহাওয়া লোড হচ্ছে...</span>
+                  ) : (
+                    <span className="transition-all duration-500 font-bold">
+                      {weatherList[currentWeatherIndex]?.city}: {weatherList[currentWeatherIndex]?.temp}°C
+                    </span>
+                  )}
                 </div>
-                <h4 className="text-2xl font-bold text-amber-300 mb-3 group-hover:text-amber-200 transition-colors">
-                  {lang === "bn" ? "লক্ষ্য" : "Vision"}
-                </h4>
-                <p className="text-emerald-100/90 text-sm leading-relaxed">
-                  {lang === "bn"
-                    ? "SAIL-এর প্রধান লক্ষ্য হলো কৃষকদের কৃষি-বিষয়ক তথ্য ও শিক্ষামূলক সেবা একটি আধুনিক ও সর্বজনীন একক প্ল্যাটফর্মের আওতায় সফলভাবে পৌঁছে দেওয়া।"
-                    : "SAIL's primary vision is to deliver modern agricultural information and educational services under a unified accessible platform."}
-                </p>
-              </div>
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-amber-400/80 font-semibold">
-                <span>{lang === "bn" ? "স্বচ্ছতা ও সমৃদ্ধি" : "Transparency & Growth"}</span>
-                <span>01</span>
+
+                <div className="text-gray-800 font-bold">
+                  <span>
+                    {lang === 'bn' ? 'শনিবার, ৩ অক্টোবর, ২০২৬' : 'Saturday, October 3, 2026'}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="group relative bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/50 flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-gradient-to-tr from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl mb-6 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
-                  💡
-                </div>
-                <h4 className="text-2xl font-bold text-amber-300 mb-3 group-hover:text-amber-200 transition-colors">
-                  {lang === "bn" ? "উদ্দেশ্য" : "Mission"}
-                </h4>
-                <p className="text-emerald-100/90 text-sm leading-relaxed">
-                  {lang === "bn"
-                    ? "'শাহ কৃষি তথ্য পাঠাগার' স্থানীয় ও জাতীয় পর্যায়ের কৃষকদের জন্য কৃষি বিষয়ক জ্ঞানভাণ্ডার এবং আধুনিক তথ্যের ক্ষেত্র হিসেবে নিজেকে গড়ে তুলতে নিবেদিত।"
-                    : "Dedicated to serving local and national farmers as a premier knowledge center for agricultural information and modern practices."}
-                </p>
-              </div>
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-emerald-400/80 font-semibold">
-                <span>{lang === "bn" ? "জ্ঞান ও আধুনিকায়ন" : "Knowledge & Innovation"}</span>
-                <span>02</span>
-              </div>
-            </div>
+            {/* Red-Green Main Brand Navigation Header */}
+            <header className="bg-[#006A4E] text-white border-b-2 border-[#F42A41]">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between relative">
+                
+                <a href="#home" className="flex items-center space-x-2.5 group">
+                  <div className="p-1.5 rounded-lg bg-[#F42A41] text-white shadow-md group-hover:scale-105 transition duration-300">
+                    <Sprout className="h-5 w-5" />
+                  </div>
+                  <span className="text-base font-extrabold tracking-wide text-white group-hover:text-yellow-300 transition duration-300">
+                    {lang === 'bn' ? 'শাহ্ কৃষি পাঠাগার ও জাদুঘর' : 'Shah Agriculture Library & Museum'}
+                  </span>
+                </a>
 
-            <div className="group relative bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/50 flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-gradient-to-tr from-amber-400 to-emerald-400 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl mb-6 shadow-lg shadow-emerald-400/20 group-hover:scale-110 transition-transform">
-                  🚀
-                </div>
-                <h4 className="text-2xl font-bold text-amber-300 mb-3 group-hover:text-amber-200 transition-colors">
-                  {lang === "bn" ? "গন্তব্য" : "Goal"}
-                </h4>
-                <p className="text-emerald-100/90 text-sm leading-relaxed">
-                  {lang === "bn"
-                    ? "কৃষকদের দক্ষতা বিকাশে মৌলিক ও কারিগরি তথ্য প্রদান করা, যাতে তারা আধুনিক কৃষির সাথে তাল মিলিয়ে নিজেদের আত্মনির্ভরশীল ও সক্ষম করতে পারেন।"
-                    : "Equipping farmers with practical and technical knowledge to empower them towards self-reliance and modern farming mastery."}
-                </p>
-              </div>
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-amber-400/80 font-semibold">
-                <span>{lang === "bn" ? "স্থায়িত্ব ও স্বাবলম্বিতা" : "Sustainability"}</span>
-                <span>03</span>
-              </div>
-            </div>
+                {!searchOpen && (
+                  <div className="hidden lg:flex space-x-8 text-sm font-bold items-center text-white">
+                    <a href="#home" className="hover:text-yellow-300 transition duration-200">
+                      {lang === 'bn' ? 'হোম' : 'Home'}
+                    </a>
 
+                    <div className="relative group py-3">
+                      <a href="#ebooks" className="flex items-center space-x-1 hover:text-yellow-300 transition duration-200">
+                        <span>{lang === 'bn' ? 'ই-লাইব্রেরি' : 'E-Library'}</span>
+                        <ChevronDown className="h-3.5 w-3.5 group-hover:rotate-180 transition duration-300" />
+                      </a>
+                    </div>
+
+                    <div className="relative group py-3">
+                      <a href="#museum" className="flex items-center space-x-1 hover:text-yellow-300 transition duration-200">
+                        <span>{lang === 'bn' ? 'ডিজিটাল জাদুঘর' : 'Digital Museum'}</span>
+                        <ChevronDown className="h-3.5 w-3.5 group-hover:rotate-180 transition duration-300" />
+                      </a>
+                    </div>
+
+                    <a href="#about" className="hover:text-yellow-300 transition duration-200">
+                      {lang === 'bn' ? 'আমাদের সম্পর্কে' : 'About Us'}
+                    </a>
+                  </div>
+                )}
+
+                {/* Search Bar */}
+                {searchOpen ? (
+                  <div className="flex-1 max-w-md mx-4 relative">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      placeholder={lang === 'bn' ? 'বই বা নিদর্শন খুঁজুন...' : 'Search books or artifacts...'}
+                      className="w-full pl-4 pr-10 py-1.5 rounded-full text-black bg-white border border-yellow-400 focus:outline-none text-xs"
+                    />
+                    <button 
+                      onClick={() => setSearchOpen(false)}
+                      className="absolute right-2.5 top-2 text-gray-600 hover:text-black transition"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setSearchOpen(true)}
+                    className="p-2 rounded-full hover:bg-white/10 text-white transition duration-200"
+                    title="Search"
+                  >
+                    <Search className="h-4 w-4" />
+                  </button>
+                )}
+
+                {/* Quick Toolbar */}
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={() => setLang(lang === 'bn' ? 'en' : 'bn')}
+                    className="flex items-center space-x-1 text-xs font-bold bg-[#F42A41] hover:bg-red-700 text-white px-3 py-1 rounded-full shadow transition"
+                  >
+                    <Globe className="h-3 w-3" />
+                    <span>{lang === 'bn' ? 'EN' : 'বাংলা'}</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="p-1.5 rounded-full hover:bg-white/10 text-white transition duration-200"
+                  >
+                    {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  </button>
+
+                  <button 
+                    onClick={() => setActiveView('admin')}
+                    className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition duration-200"
+                    title="Control Panel / Admin"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                  </button>
+                </div>
+
+              </div>
+            </header>
           </div>
-        </div>
-      </section>
 
-      {/* ================= CHAIRMAN MESSAGE ================= */}
-      <section className="max-w-5xl mx-auto px-4 py-16">
-        <div className="bg-white p-8 sm:p-12 rounded-2xl shadow-xl border border-emerald-100 text-center">
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-950 mb-6">
-            {lang === "bn" ? "প্রতিষ্ঠাতা চেয়ারম্যানের বার্তা" : "Founder Chairman's Message"}
-          </h3>
-          
-          <p className="text-gray-700 text-sm sm:text-base leading-relaxed text-justify mb-8">
-            {lang === "bn"
-              ? "দেশে কৃষি শিক্ষার ধারাবাহিক কোনো উন্নয়ন পরিলক্ষিত হচ্ছে না। মূলত কৃষকদের নিজস্ব অভিজ্ঞতার ওপর ভিত্তি করেই কৃষিসংক্রান্ত বিভিন্ন সমস্যার সমাধান খুঁজে নেওয়া হয়েছে। তাই কৃষি শিক্ষার বিভিন্ন দিককে সমৃদ্ধ করতে কৃষকদের অর্জিত জ্ঞানের সাথে আধুনিক কৃষি-তথ্য ও প্রযুক্তির সমন্বয় ঘটানো প্রয়োজন। কিন্তু আমাদের দেশে তথ্য ও জ্ঞানের সহজলভ্যতা সবার জন্য সমান নয়। কৃষকরা কৃষিবিজ্ঞান বা বিশেষজ্ঞদের সাথে বিষয়ভিত্তিক যোগাযোগের সুযোগ থেকে বঞ্চিত এবং তারা কৃষি বিষয়ক সুনির্দিষ্ট ও তথ্যবহুল বইয়ের জন্য আগ্রহী। এই বাস্তবতাই কৃষকদের জন্য একটি তথ্য-ভাণ্ডার বা লাইব্রেরি প্রতিষ্ঠার প্রয়োজনীয়তা সৃষ্টি করেছিল।"
-              : "Continuous improvement in agricultural education has been limited. Farmers often rely solely on personal experience to solve agricultural issues. Integrating traditional wisdom with modern agricultural technology is crucial. Recognizing this need, we established this library to provide accessible knowledge to farmers."}
-          </p>
+          {/* Main Front Content */}
+          <div className="pt-28">
 
-          <div className="flex flex-col items-center justify-center">
-            <img
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200"
-              alt="Jahangir Alam Shah"
-              className="w-24 h-24 rounded-full object-cover border-4 border-emerald-600 shadow-md mb-3"
-            />
-            <h5 className="font-bold text-emerald-900 text-lg">
-              {lang === "bn" ? "জাহাঙ্গীর আলম শাহ" : "Jahangir Alam Shah"}
-            </h5>
-            <p className="text-xs font-semibold text-amber-700">
-              {lang === "bn" ? "প্রতিষ্ঠাতা চেয়ারম্যান" : "Founder Chairman"}
-            </p>
-          </div>
-        </div>
-      </section>
+            {/* Seamless, Completely Box-Free & Border-Free Running News Ticker */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 my-2">
+              <div className="h-6 flex items-center">
+                <div className="relative h-5 overflow-hidden flex-1">
+                  {activeNews.length > 0 ? (
+                    activeNews.map((news, index) => (
+                      <div
+                        key={news.id}
+                        className={`absolute left-0 w-full text-xs sm:text-sm font-semibold transition-all duration-500 ease-in-out flex items-center ${
+                          darkMode ? 'text-gray-200' : 'text-gray-800'
+                        } ${
+                          index === currentNewsIndex
+                            ? 'top-0 opacity-100 translate-y-0 z-10'
+                            : 'top-full opacity-0 translate-y-1 z-0'
+                        }`}
+                      >
+                        <span className="truncate">{lang === 'bn' ? news.textBn : news.textEn}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-gray-400">কোনো নোটিশ প্রকাশ করা হয়নি।</div>
+                  )}
+                </div>
+              </div>
+            </div>
 
-      {/* ================= TESTIMONIALS ================= */}
-      <section className="bg-emerald-50 py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-emerald-950 mb-8">
-            {lang === "bn" ? "দর্শনার্থীর বার্তা" : "Visitors' Testimonials"}
-          </h3>
-
-          <div className="relative bg-white p-8 rounded-2xl shadow-md border border-emerald-100 min-h-[200px] flex flex-col justify-center items-center">
-            {TESTIMONIALS.map((item, idx) => (
-              <div
-                key={item.id}
-                className={`transition-all duration-700 ${
-                  idx === testimonialIdx ? "opacity-100 block" : "opacity-0 hidden"
-                }`}
+            {/* Hero Image Slider */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6" id="home">
+              <section 
+                className="relative h-[320px] sm:h-[400px] rounded-2xl overflow-hidden bg-gray-900 shadow-xl cursor-pointer"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
               >
-                <p className="text-gray-700 italic text-base sm:text-lg mb-6">
-                  "{lang === "bn" ? item.commentBn : item.commentEn}"
-                </p>
-                <div className="flex items-center gap-3 justify-center">
-                  <img
-                    src={item.image}
-                    alt="User"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-emerald-600"
-                  />
-                  <div className="text-left">
-                    <h5 className="font-bold text-emerald-900 text-sm">
-                      {lang === "bn" ? item.nameBn : item.nameEn}
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      {lang === "bn" ? item.roleBn : item.roleEn}
-                    </p>
+                {slides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                      index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                  >
+                    <div 
+                      className="relative h-full w-full bg-cover bg-center flex items-center px-6 sm:px-12 transition-transform duration-700"
+                      style={{ backgroundImage: `url(${slide.imageUrl})` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent"></div>
+
+                      <div className="relative z-10 max-w-2xl text-left">
+                        <h2 className="text-xl sm:text-2xl font-extrabold text-[#FFD700] border-l-4 border-[#F42A41] pl-3 mb-3 tracking-wide drop-shadow-md">
+                          {lang === 'bn' ? 'শাহ্ কৃষি পাঠাগার ও জাদুঘর' : 'Shah Agriculture Library & Museum'}
+                        </h2>
+
+                        <div className="h-16 sm:h-20">
+                          {showSubtitle && (
+                            <div className={subtitleAnimations[animationType]}>
+                              <p className="text-lg sm:text-2xl font-bold text-white leading-relaxed drop-shadow-lg">
+                                {lang === 'bn' ? slide.titleBn : slide.titleEn}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex space-x-3">
+                          <a href="#ebooks" className="bg-[#006A4E] hover:bg-[#00523C] text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-2">
+                            <BookOpen className="h-4 w-4" />
+                            <span>{lang === 'bn' ? 'ই-বুক সমূহ পড়ুন' : 'Read E-Books'}</span>
+                          </a>
+                          <a href="#museum" className="bg-[#F42A41] hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center space-x-2">
+                            <Landmark className="h-4 w-4" />
+                            <span>{lang === 'bn' ? 'জাদুঘর পরিদর্শণ' : 'Visit Museum'}</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button 
+                  onClick={() => setCurrentSlide(currentSlide === 0 ? slides.length - 1 : currentSlide - 1)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button 
+                  onClick={() => setCurrentSlide((currentSlide + 1) % slides.length)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </section>
+            </div>
+
+            {/* Live Library Stats Counters */}
+            <section className={`mt-8 py-6 border-y ${darkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'}`}>
+              <div className="max-w-5xl mx-auto px-4">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="p-3 rounded-lg hover:bg-emerald-50 dark:hover:bg-gray-700/50 transition">
+                    <BookOpen className="h-6 w-6 mx-auto text-[#006A4E] dark:text-[#FFD700] mb-1" />
+                    <div className="text-2xl sm:text-3xl font-black text-[#006A4E] dark:text-[#FFD700]">
+                      {counters.ebooks.toLocaleString()}+
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {lang === 'bn' ? 'ই-বুক ও ডিজিটাল সাময়িকী' : 'E-Books & Journals'}
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700/50 transition border-x border-gray-200 dark:border-gray-700">
+                    <Landmark className="h-6 w-6 mx-auto text-[#F42A41] mb-1" />
+                    <div className="text-2xl sm:text-3xl font-black text-[#F42A41]">
+                      {counters.museum.toLocaleString()}+
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {lang === 'bn' ? 'ঐতিহ্যবাহী জাদুঘর উপাদান' : 'Museum Artifacts'}
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg hover:bg-amber-50 dark:hover:bg-gray-700/50 transition">
+                    <Sprout className="h-6 w-6 mx-auto text-amber-600 mb-1" />
+                    <div className="text-2xl sm:text-3xl font-black text-amber-600">
+                      {counters.categories.toLocaleString()}+
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {lang === 'bn' ? 'বিষয়ভিত্তিক গবেষণা বিভাগ' : 'Research Categories'}
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </section>
+
+            {/* E-Books Showcase Gallery */}
+            <section className="max-w-7xl mx-auto py-12 px-4" id="ebooks">
+              <div className="flex justify-between items-end mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#006A4E] dark:text-emerald-400 flex items-center space-x-2">
+                    <BookOpen className="h-6 w-6" />
+                    <span>{lang === 'bn' ? 'ডিজিটাল ই-বুক ও পাবলিকেশন' : 'E-Books & Digital Library'}</span>
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {lang === 'bn' ? 'কৃষি প্রযুক্তি, বীজ বিজ্ঞান ও ঐতিহ্যের ওপর ডিজিটাল বইসমূহ বিনামূল্যে পড়ুন' : 'Read rare agriculture research and guides online'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {booksList.map((book) => (
+                  <div 
+                    key={book.id} 
+                    className={`rounded-xl border overflow-hidden shadow-sm hover:shadow-md transition group ${
+                      darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                    }`}
+                  >
+                    <div className="h-48 overflow-hidden relative">
+                      <img 
+                        src={book.cover} 
+                        alt={book.titleBn} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                      />
+                      <span className="absolute top-3 right-3 bg-[#006A4E] text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                        {book.category}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-bold text-base mb-1 line-clamp-1">
+                        {lang === 'bn' ? book.titleBn : book.titleEn}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                        {lang === 'bn' ? `লেখক: ${book.author}` : `Author: ${book.author}`}
+                      </p>
+                      <button 
+                        onClick={() => setSelectedBookPdf(book)}
+                        className="w-full bg-[#006A4E] hover:bg-[#00523C] text-white py-2 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        <span>{lang === 'bn' ? 'বইটি অনলাইন পড়ুন' : 'Read Online PDF'}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Digital Museum Artifacts Showcase */}
+            <section className={`py-12 border-t ${darkMode ? 'bg-gray-800/30 border-gray-800' : 'bg-emerald-50/50 border-gray-200'}`} id="museum">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-[#F42A41] flex items-center space-x-2">
+                    <Landmark className="h-6 w-6" />
+                    <span>{lang === 'bn' ? 'ডিজিটাল কৃষি জাদুঘর' : 'Digital Agriculture Museum'}</span>
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {lang === 'bn' ? 'বিলুপ্তপ্রায় প্রাচীন কৃষি সরঞ্জাম ও আবহমান বাংলার গ্রামীণ ইতিহাস' : 'Explore rare agricultural heritage artifacts and history'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {artifactsList.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className={`rounded-2xl border overflow-hidden shadow-sm hover:shadow-lg transition ${
+                        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                      }`}
+                    >
+                      <div className="h-52 overflow-hidden relative">
+                        <img 
+                          src={item.image} 
+                          alt={item.titleBn} 
+                          className="w-full h-full object-cover hover:scale-105 transition duration-500" 
+                        />
+                        <span className="absolute bottom-3 left-3 bg-black/70 text-white text-[10px] px-2.5 py-1 rounded-md backdrop-blur-sm">
+                          {item.era}
+                        </span>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-bold text-base text-gray-900 dark:text-white mb-2">
+                          {lang === 'bn' ? item.titleBn : item.titleEn}
+                        </h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 mb-4 leading-relaxed">
+                          {item.desc}
+                        </p>
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700 text-xs">
+                          <span className="text-gray-400">{item.origin}</span>
+                          <button 
+                            onClick={() => setSelectedArtifact(item)}
+                            className="text-[#F42A41] font-bold hover:underline flex items-center space-x-1"
+                          >
+                            <span>{lang === 'bn' ? 'বিস্তারিত দেখুন' : 'View Details'}</span>
+                            <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-[#004D36] text-gray-200 py-8 text-center text-sm border-t-2 border-[#F42A41]">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex justify-center space-x-6 mb-4 text-xs">
+                  <a href="#home" className="hover:underline">হোম</a>
+                  <a href="#ebooks" className="hover:underline">ই-লাইব্রেরি</a>
+                  <a href="#museum" className="hover:underline">জাদুঘর</a>
+                  <button onClick={() => setActiveView('admin')} className="text-yellow-300 hover:underline">অ্যাডমিন প্যানেল</button>
+                </div>
+                <p>© ২০২৬ {lang === 'bn' ? 'শাহ্ কৃষি পাঠাগার ও জাদুঘর। সর্বস্বত্ব সংরক্ষিত।' : 'Shah Agriculture Library & Museum. All rights reserved.'}</p>
+              </div>
+            </footer>
+
           </div>
         </div>
-      </section>
+      )}
 
-      {/* ================= FOOTER ================= */}
-      <footer className="bg-[#012213] text-white py-6 text-center text-sm border-t border-emerald-900">
-        <p className="text-emerald-300">
-          © {new Date().getFullYear()}{" "}
-          {lang === "bn"
-            ? "শাহ কৃষি তথ্য পাঠাগার ও জাদুঘর। সর্বস্বত্ব সংরক্ষিত।"
-            : "Shah Krishi Information Library & Museum. All rights reserved."}
-        </p>
-      </footer>
+      {/* ========================================================================= */}
+      {/* 2. BACKEND ADMIN DASHBOARD & CMS CONTROL PANEL                            */}
+      {/* ========================================================================= */}
+      {activeView === 'admin' && (
+        <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
+          
+          {/* Admin Header Bar */}
+          <div className="bg-[#006A4E] text-white px-6 py-4 shadow-md flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="bg-[#F42A41] p-2 rounded-lg">
+                <LayoutDashboard className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-lg leading-none">
+                  {lang === 'bn' ? 'শাহ্ কৃষি কন্ট্রোল প্যানেল (CMS Panel)' : 'Shah Agri Admin CMS Panel'}
+                </h1>
+                <p className="text-xs text-emerald-200 mt-1">
+                  {lang === 'bn' ? 'লাইভ কনটেন্ট ম্যানেজমেন্ট সিস্টেম' : 'Live Website Content Management System'}
+                </p>
+              </div>
+            </div>
 
-      {/* ================= TOP SCROLL BUTTON ================= */}
-      {showTopBtn && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-amber-500 hover:bg-amber-600 text-emerald-950 p-3.5 rounded-full shadow-2xl transition-all transform hover:scale-110 font-bold border-2 border-amber-300"
-          title="Top"
-        >
-          ⬆️
-        </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setActiveView('frontend')}
+                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5"
+              >
+                <Eye className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'লাইভ সাইট দেখুন' : 'Preview Live Site'}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveView('frontend')}
+                className="bg-[#F42A41] hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'প্রস্থান' : 'Exit Admin'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col md:flex-row">
+            
+            {/* Sidebar Navigation */}
+            <aside className="w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 space-y-1">
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-3">
+                মেগারু মেনু / Control Tabs
+              </div>
+
+              <button
+                onClick={() => setAdminTab('overview')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                  adminTab === 'overview'
+                    ? 'bg-[#006A4E] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'ওভারভিউ ড্যাশবোর্ড' : 'Overview Dashboard'}</span>
+              </button>
+
+              <button
+                onClick={() => setAdminTab('news')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                  adminTab === 'news'
+                    ? 'bg-[#006A4E] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'সংবাদ স্ক্রলার (News Ticker)' : 'News Ticker Manager'}</span>
+              </button>
+
+              <button
+                onClick={() => setAdminTab('books')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                  adminTab === 'books'
+                    ? 'bg-[#006A4E] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'ই-বুক ম্যানেজমেন্ট' : 'E-Books & Journals'}</span>
+              </button>
+
+              <button
+                onClick={() => setAdminTab('artifacts')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                  adminTab === 'artifacts'
+                    ? 'bg-[#006A4E] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <Landmark className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'জাদুঘর নিদর্শন ক্যাটালগ' : 'Museum Artifacts'}</span>
+              </button>
+
+              <button
+                onClick={() => setAdminTab('settings')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                  adminTab === 'settings'
+                    ? 'bg-[#006A4E] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <Sliders className="h-4 w-4" />
+                <span>{lang === 'bn' ? 'ব্যানার ও কাউন্টার সেটিংস' : 'Counter & Slider Settings'}</span>
+              </button>
+            </aside>
+
+            {/* Main CMS Tab Workspace */}
+            <main className="flex-1 p-6">
+              
+              {/* TAB 1: OVERVIEW */}
+              {adminTab === 'overview' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-gray-500">মোট প্রকাশিত সংবাদ</span>
+                        <FileText className="h-5 w-5 text-[#006A4E]" />
+                      </div>
+                      <div className="text-3xl font-black">{newsList.length}</div>
+                      <div className="text-[11px] text-emerald-600 font-semibold mt-1">
+                        {newsList.filter(n => n.active).length} টি টি্কারে অ্যাক্টিভ রয়েছে
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-gray-500">সংরক্ষিত ই-বুক</span>
+                        <BookOpen className="h-5 w-5 text-[#F42A41]" />
+                      </div>
+                      <div className="text-3xl font-black">{booksList.length}</div>
+                      <div className="text-[11px] text-gray-400 mt-1">অনলাইনে পড়ার উপযোগী</div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-bold text-gray-500">জাদুঘর আইটেম</span>
+                        <Landmark className="h-5 w-5 text-amber-500" />
+                      </div>
+                      <div className="text-3xl font-black">{artifactsList.length}</div>
+                      <div className="text-[11px] text-amber-600 font-semibold mt-1">ডিজিটাল আর্কাভে ক্যাটালগড</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                    <h3 className="font-bold text-base mb-4 flex items-center space-x-2">
+                      <Database className="h-5 w-5 text-[#006A4E]" />
+                      <span>সিস্টেম স্ট্যাটাস ও পরামর্শ</span>
+                    </h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                      এখানে যেসকল পরিবর্তন করা হবে তা সরাসরি ওয়েবসাইট ফ্রন্টএন্ডে প্রতিফলিত হবে। নতুন ডাটা ব্রাউজারের লোকাল স্টোরেজে (Local Storage) সংরক্ষিত হচ্ছে।
+                    </p>
+                    <button
+                      onClick={() => {
+                        localStorage.clear();
+                        window.location.reload();
+                      }}
+                      className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-200 transition"
+                    >
+                      ডিফল্ট ডেমো ডাটায় রিকভার / রিসেট করুন
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: NEWS TICKER MANAGER */}
+              {adminTab === 'news' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-lg font-bold">সংবাদ ও নোটিশ স্ক্রলার লিস্ট</h2>
+                      <p className="text-xs text-gray-500">টপবারে চলমান সংবাদ যুক্ত বা এডিট করুন</p>
+                    </div>
+                    <button
+                      onClick={() => setNewsModal({ open: true, item: null })}
+                      className="bg-[#006A4E] hover:bg-[#00523C] text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>নতুন স্ক্রলিং সংবাদ যোগ করুন</span>
+                    </button>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 text-gray-500">
+                        <tr>
+                          <th className="p-4">বাংলা বিবরণ</th>
+                          <th className="p-4">ইংরেজি বিবরণ</th>
+                          <th className="p-4">স্ট্যাটাস</th>
+                          <th className="p-4 text-right">অ্যাকশন</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        {newsList.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30">
+                            <td className="p-4 font-semibold">{item.textBn}</td>
+                            <td className="p-4 text-gray-500">{item.textEn}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                item.active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'
+                              }`}>
+                                {item.active ? 'অ্যাক্টিভ' : 'বন্ধ'}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right space-x-2">
+                              <button
+                                onClick={() => setNewsModal({ open: true, item })}
+                                className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteNews(item.id)}
+                                className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: E-BOOKS MANAGER */}
+              {adminTab === 'books' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-lg font-bold">ই-বুক ও সাময়িকী কালেকশন</h2>
+                      <p className="text-xs text-gray-500">নতুন বই বা পিডিএফ ক্যাটালগ যুক্ত করুন</p>
+                    </div>
+                    <button
+                      onClick={() => setBookModal({ open: true, item: null })}
+                      className="bg-[#006A4E] hover:bg-[#00523C] text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>নতুন বই যোগ করুন</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {booksList.map((book) => (
+                      <div key={book.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 flex space-x-3">
+                        <img src={book.cover} alt={book.titleBn} className="w-16 h-20 object-cover rounded-lg" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-xs truncate">{book.titleBn}</h4>
+                          <p className="text-[11px] text-gray-400 mt-0.5">{book.author}</p>
+                          <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded">
+                            {book.category}
+                          </span>
+                          <div className="flex space-x-2 mt-3">
+                            <button
+                              onClick={() => setBookModal({ open: true, item: book })}
+                              className="text-xs text-blue-600 font-bold hover:underline"
+                            >
+                              এডিট
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBook(book.id)}
+                              className="text-xs text-red-600 font-bold hover:underline"
+                            >
+                              মুছে ফেলুন
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: MUSEUM ARTIFACTS MANAGER */}
+              {adminTab === 'artifacts' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-lg font-bold">জাদুঘর ঐতিহ্যবাহী সরঞ্জাম</h2>
+                      <p className="text-xs text-gray-500">প্রাচীন কৃষি নিদর্শনের তথ্য পরিচালনা করুন</p>
+                    </div>
+                    <button
+                      onClick={() => setArtifactModal({ open: true, item: null })}
+                      className="bg-[#F42A41] hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>নতুন নিদর্শন যুক্ত করুন</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {artifactsList.map((art) => (
+                      <div key={art.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 flex space-x-4">
+                        <img src={art.image} alt={art.titleBn} className="w-24 h-24 object-cover rounded-xl" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm truncate">{art.titleBn}</h4>
+                          <p className="text-xs text-amber-600 font-semibold mt-0.5">{art.era} • {art.origin}</p>
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-1">{art.desc}</p>
+                          <div className="flex space-x-3 mt-3">
+                            <button
+                              onClick={() => setArtifactModal({ open: true, item: art })}
+                              className="text-xs text-blue-600 font-bold hover:underline"
+                            >
+                              এডিট
+                            </button>
+                            <button
+                              onClick={() => handleDeleteArtifact(art.id)}
+                              className="text-xs text-red-600 font-bold hover:underline"
+                            >
+                              ডিলিট
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: COUNTERS & SLIDER SETTINGS */}
+              {adminTab === 'settings' && (
+                <div className="space-y-6">
+                  <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                    <h3 className="font-bold text-base mb-4">লাইব্রেরি ও জাদুঘর পরিসংখ্যান কাউন্টার</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">ই-বুক সংখ্যা</label>
+                        <input
+                          type="number"
+                          value={counters.ebooks}
+                          onChange={(e) => setCounters({ ...counters, ebooks: parseInt(e.target.value) || 0 })}
+                          className="w-full p-2.5 rounded-xl border text-sm font-bold bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">জাদুঘর নিদর্শন সংখ্যা</label>
+                        <input
+                          type="number"
+                          value={counters.museum}
+                          onChange={(e) => setCounters({ ...counters, museum: parseInt(e.target.value) || 0 })}
+                          className="w-full p-2.5 rounded-xl border text-sm font-bold bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">ক্যাটাগরি সংখ্যা</label>
+                        <input
+                          type="number"
+                          value={counters.categories}
+                          onChange={(e) => setCounters({ ...counters, categories: parseInt(e.target.value) || 0 })}
+                          className="w-full p-2.5 rounded-xl border text-sm font-bold bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </main>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODALS & DIALOGS                                                         */}
+      {/* ========================================================================= */}
+
+      {/* PDF Reader Modal */}
+      {selectedBookPdf && (
+        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-4xl h-[85vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+              <div>
+                <h3 className="font-bold text-sm">{selectedBookPdf.titleBn}</h3>
+                <p className="text-xs text-gray-500">{selectedBookPdf.author}</p>
+              </div>
+              <button onClick={() => setSelectedBookPdf(null)} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 bg-gray-200 dark:bg-gray-950 flex items-center justify-center">
+              <iframe src={selectedBookPdf.pdfUrl} className="w-full h-full border-none" title="PDF Viewer" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Artifact Detail Modal */}
+      {selectedArtifact && (
+        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <button onClick={() => setSelectedArtifact(null)} className="absolute top-4 right-4 p-1 rounded-full bg-gray-100 dark:bg-gray-800">
+              <X className="h-5 w-5" />
+            </button>
+            <img src={selectedArtifact.image} alt={selectedArtifact.titleBn} className="w-full h-56 object-cover rounded-xl mb-4" />
+            <h3 className="font-bold text-lg mb-1">{selectedArtifact.titleBn}</h3>
+            <p className="text-xs text-amber-600 font-bold mb-3">{selectedArtifact.era} | {selectedArtifact.origin}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-4">{selectedArtifact.desc}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Admin News Modal */}
+      {newsModal.open && (
+        <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
+          <form onSubmit={handleSaveNews} className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl">
+            <h3 className="font-bold text-base">{newsModal.item ? 'সংবাদ এডিট করুন' : 'নতুন সংবাদ যোগ করুন'}</h3>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">বাংলা হেডলাইন</label>
+              <input name="textBn" defaultValue={newsModal.item?.textBn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">ইংরেজি হেডলাইন</label>
+              <input name="textEn" defaultValue={newsModal.item?.textEn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input type="checkbox" name="active" defaultChecked={newsModal.item ? newsModal.item.active : true} id="act" />
+              <label htmlFor="act" className="text-xs font-bold">টিকারের জন্য অ্যাক্টিভ রাখুন</label>
+            </div>
+            <div className="flex justify-end space-x-2 pt-2">
+              <button type="button" onClick={() => setNewsModal({ open: false, item: null })} className="px-4 py-2 rounded-xl text-xs font-bold bg-gray-100">বাতিল</button>
+              <button type="submit" className="px-4 py-2 rounded-xl text-xs font-bold bg-[#006A4E] text-white">সংরক্ষণ করুন</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Admin Book Modal */}
+      {bookModal.open && (
+        <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
+          <form onSubmit={handleSaveBook} className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl p-6 space-y-3 shadow-2xl">
+            <h3 className="font-bold text-base">{bookModal.item ? 'বই সংশোধন করুন' : 'নতুন বই যুক্ত করুন'}</h3>
+            <input name="titleBn" placeholder="বাংলা শিরোনাম" defaultValue={bookModal.item?.titleBn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="titleEn" placeholder="English Title" defaultValue={bookModal.item?.titleEn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="author" placeholder="লেখকের নাম" defaultValue={bookModal.item?.author || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="category" placeholder="ক্যাটাগরি" defaultValue={bookModal.item?.category || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="pdfUrl" placeholder="PDF লিঙ্ক / URL" defaultValue={bookModal.item?.pdfUrl || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="cover" placeholder="কভার ছবির URL" defaultValue={bookModal.item?.cover || ''} className="w-full p-2 rounded-xl border text-xs" />
+            <div className="flex justify-end space-x-2 pt-2">
+              <button type="button" onClick={() => setBookModal({ open: false, item: null })} className="px-4 py-2 rounded-xl text-xs font-bold bg-gray-100">বাতিল</button>
+              <button type="submit" className="px-4 py-2 rounded-xl text-xs font-bold bg-[#006A4E] text-white">সংরক্ষণ</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Admin Artifact Modal */}
+      {artifactModal.open && (
+        <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
+          <form onSubmit={handleSaveArtifact} className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl p-6 space-y-3 shadow-2xl">
+            <h3 className="font-bold text-base">{artifactModal.item ? 'নিদর্শন এডিট করুন' : 'নতুন জাদুঘর উপাদান যোগ করুন'}</h3>
+            <input name="titleBn" placeholder="নাম (বাংলা)" defaultValue={artifactModal.item?.titleBn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="titleEn" placeholder="Name (English)" defaultValue={artifactModal.item?.titleEn || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="era" placeholder="সময়কাল (যেমন: ১৯ শতক)" defaultValue={artifactModal.item?.era || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="origin" placeholder="সংগ্রহের স্থান" defaultValue={artifactModal.item?.origin || ''} required className="w-full p-2 rounded-xl border text-xs" />
+            <input name="image" placeholder="ছবির URL" defaultValue={artifactModal.item?.image || ''} className="w-full p-2 rounded-xl border text-xs" />
+            <textarea name="desc" placeholder="সংক্ষিপ্ত বিবরণ" defaultValue={artifactModal.item?.desc || ''} required className="w-full p-2 rounded-xl border text-xs h-20" />
+            <div className="flex justify-end space-x-2 pt-2">
+              <button type="button" onClick={() => setArtifactModal({ open: false, item: null })} className="px-4 py-2 rounded-xl text-xs font-bold bg-gray-100">বাতিল</button>
+              <button type="submit" className="px-4 py-2 rounded-xl text-xs font-bold bg-[#F42A41] text-white">সংরক্ষণ</button>
+            </div>
+          </form>
+        </div>
       )}
 
     </div>
